@@ -2,7 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertUserSchema, insertNomineeSchema } from "@shared/schema";
+import { insertUserSchema, insertNomineeSchema, insertMoodEntrySchema } from "@shared/schema";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 
@@ -430,6 +430,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true, message: "Test alert sent successfully" });
     } catch (error: any) {
       res.status(500).json({ message: "Failed to send test alert", error: error.message });
+    }
+  });
+
+  // Mood tracking endpoints
+  app.get('/api/mood/entries', combinedAuth, async (req: any, res) => {
+    try {
+      const userId = req.userId;
+      const limit = parseInt(req.query.limit as string) || 30;
+      
+      const moods = await storage.getUserMoodEntries(userId, limit);
+      res.json(moods);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch mood entries", error: error.message });
+    }
+  });
+
+  app.post('/api/mood/entries', combinedAuth, async (req: any, res) => {
+    try {
+      const userId = req.userId;
+      const moodData = insertMoodEntrySchema.parse({
+        ...req.body,
+        userId,
+      });
+      
+      const mood = await storage.createMoodEntry(moodData);
+      res.json({ success: true, mood });
+    } catch (error: any) {
+      res.status(400).json({ message: "Failed to create mood entry", error: error.message });
+    }
+  });
+
+  app.get('/api/mood/latest', combinedAuth, async (req: any, res) => {
+    try {
+      const userId = req.userId;
+      const mood = await storage.getUserLatestMood(userId);
+      res.json(mood || null);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch latest mood", error: error.message });
     }
   });
 

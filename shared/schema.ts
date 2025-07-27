@@ -53,6 +53,16 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Mood tracking table
+export const moodEntries = pgTable("mood_entries", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  mood: varchar("mood").notNull(), // happy, sad, stressed, calm, excited, tired, etc.
+  emoji: varchar("emoji").notNull(), // 😊, 😢, 😰, 😌, 🤩, 😴, etc.
+  notes: text("notes"), // Optional user notes
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const nominees = pgTable("nominees", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id),
@@ -134,6 +144,11 @@ export const insertAdminActionSchema = createInsertSchema(adminActions).omit({
   completedAt: true,
 });
 
+export const insertMoodEntrySchema = createInsertSchema(moodEntries).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -146,3 +161,5 @@ export type WellBeingAlert = typeof wellBeingAlerts.$inferSelect;
 export type InsertWellBeingAlert = z.infer<typeof insertWellBeingAlertSchema>;
 export type AdminAction = typeof adminActions.$inferSelect;
 export type InsertAdminAction = z.infer<typeof insertAdminActionSchema>;
+export type MoodEntry = typeof moodEntries.$inferSelect;
+export type InsertMoodEntry = z.infer<typeof insertMoodEntrySchema>;

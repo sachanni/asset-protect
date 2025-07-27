@@ -4,6 +4,7 @@ import {
   assets,
   wellBeingAlerts,
   adminActions,
+  moodEntries,
   type User,
   type UpsertUser,
   type Nominee,
@@ -14,6 +15,8 @@ import {
   type InsertWellBeingAlert,
   type AdminAction,
   type InsertAdminAction,
+  type MoodEntry,
+  type InsertMoodEntry,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, sql } from "drizzle-orm";
@@ -63,6 +66,11 @@ export interface IStorage {
   createAdminAction(action: InsertAdminAction): Promise<AdminAction>;
   getPendingAdminActions(): Promise<AdminAction[]>;
   updateAdminActionStatus(actionId: string, status: string, notes?: string): Promise<void>;
+  
+  // Mood tracking operations
+  createMoodEntry(mood: InsertMoodEntry): Promise<MoodEntry>;
+  getUserMoodEntries(userId: string, limit?: number): Promise<MoodEntry[]>;
+  getUserLatestMood(userId: string): Promise<MoodEntry | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -294,6 +302,34 @@ export class DatabaseStorage implements IStorage {
         escalationEnabled: settings.escalationEnabled,
       })
       .where(eq(users.id, userId));
+  }
+
+  // Mood tracking operations
+  async createMoodEntry(mood: InsertMoodEntry): Promise<MoodEntry> {
+    const [newMood] = await db
+      .insert(moodEntries)
+      .values(mood)
+      .returning();
+    return newMood;
+  }
+
+  async getUserMoodEntries(userId: string, limit: number = 30): Promise<MoodEntry[]> {
+    return await db
+      .select()
+      .from(moodEntries)
+      .where(eq(moodEntries.userId, userId))
+      .orderBy(desc(moodEntries.createdAt))
+      .limit(limit);
+  }
+
+  async getUserLatestMood(userId: string): Promise<MoodEntry | undefined> {
+    const [mood] = await db
+      .select()
+      .from(moodEntries)
+      .where(eq(moodEntries.userId, userId))
+      .orderBy(desc(moodEntries.createdAt))
+      .limit(1);
+    return mood;
   }
 }
 

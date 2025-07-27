@@ -14,6 +14,7 @@ import AdminDashboard from "@/pages/admin-dashboard";
 import AddNominee from "@/pages/add-nominee";
 import AddAsset from "@/pages/add-asset";
 import WellBeingSettings from "@/pages/well-being-settings";
+import MoodTrackingPage from "@/pages/mood-tracking";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -34,6 +35,7 @@ function Router() {
           <Route path="/add-nominee" component={AddNominee} />
           <Route path="/add-asset" component={AddAsset} />
           <Route path="/well-being-settings" component={WellBeingSettings} />
+          <Route path="/mood-tracking" component={MoodTrackingPage} />
         </>
       )}
       <Route component={NotFound} />

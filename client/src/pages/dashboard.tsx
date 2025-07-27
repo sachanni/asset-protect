@@ -14,6 +14,7 @@ import { Shield, Coins, Users, Heart, Cloud, Plus, ChevronDown, LogOut, Bell } f
 import WellBeingAlert from "@/components/well-being-alert";
 import AssetCard from "@/components/asset-card";
 import NomineeCard from "@/components/nominee-card";
+import MoodTracker from "@/components/mood-tracker";
 
 interface DashboardStats {
   totalAssets: number;
@@ -218,39 +219,44 @@ export default function Dashboard() {
         </div>
 
         {/* Well-being Check Section */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                  <Heart className="w-6 h-6 text-green-500" />
+        <div className="grid lg:grid-cols-2 gap-6 mb-8">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                    <Heart className="w-6 h-6 text-green-500" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="text-lg font-semibold text-gray-900">Well-being Check</h3>
+                    <p className="text-gray-600">
+                      Your next check is scheduled based on your {user?.alertFrequency || 'daily'} frequency
+                    </p>
+                  </div>
                 </div>
-                <div className="ml-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Well-being Check</h3>
-                  <p className="text-gray-600">
-                    Your next check is scheduled based on your {user?.alertFrequency || 'daily'} frequency
-                  </p>
+                <div className="flex space-x-3">
+                  <Button 
+                    onClick={() => wellBeingMutation.mutate()}
+                    disabled={wellBeingMutation.isPending}
+                    className="bg-green-500 hover:bg-green-600 text-white"
+                  >
+                    <Heart className="w-4 h-4 mr-2" />
+                    {wellBeingMutation.isPending ? "Confirming..." : "I'm Okay"}
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => setLocation("/well-being-settings")}
+                  >
+                    Configure
+                  </Button>
                 </div>
               </div>
-              <div className="flex space-x-3">
-                <Button 
-                  onClick={() => wellBeingMutation.mutate()}
-                  disabled={wellBeingMutation.isPending}
-                  className="bg-green-500 hover:bg-green-600 text-white"
-                >
-                  <Heart className="w-4 h-4 mr-2" />
-                  {wellBeingMutation.isPending ? "Confirming..." : "I'm Okay"}
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => setLocation("/well-being-settings")}
-                >
-                  Configure
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+          
+          {/* Mood Tracker */}
+          <MoodTracker compact={true} />
+        </div>
 
         {/* Well-being Check Alert - Only show when needed */}
         {showWellBeingAlert && (
