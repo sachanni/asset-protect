@@ -1,9 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import MoodTracker from '@/components/mood-tracker';
+import MoodTrends from '@/components/mood-trends';
 import { useLocation } from 'wouter';
-import { ArrowLeft, TrendingUp, Calendar } from 'lucide-react';
+import { ArrowLeft, TrendingUp, Calendar, BarChart3 } from 'lucide-react';
 
 interface MoodEntry {
   id: string;
@@ -137,12 +139,21 @@ export default function MoodTrackingPage() {
         </Card>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Mood Tracker */}
-        <MoodTracker />
+      {/* Tabbed Interface */}
+      <Tabs defaultValue="tracker" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="tracker">Track Mood</TabsTrigger>
+          <TabsTrigger value="trends">Trends & Analytics</TabsTrigger>
+          <TabsTrigger value="history">History</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="tracker" className="space-y-6">
+          <div className="grid lg:grid-cols-2 gap-6">
+            {/* Mood Tracker */}
+            <MoodTracker />
 
-        {/* Recent Entries */}
-        <Card>
+            {/* Recent Entries */}
+            <Card>
           <CardHeader>
             <CardTitle>Recent Mood Entries</CardTitle>
           </CardHeader>
@@ -189,7 +200,86 @@ export default function MoodTrackingPage() {
             )}
           </CardContent>
         </Card>
-      </div>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="trends" className="space-y-6">
+          <MoodTrends />
+        </TabsContent>
+        
+        <TabsContent value="history" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Complete Mood History</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="space-y-3">
+                  {[...Array(10)].map((_, i) => (
+                    <div key={i} className="animate-pulse">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                        <div className="flex-1">
+                          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                          <div className="h-3 bg-gray-200 rounded w-1/2 mt-1"></div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : moodEntries.length === 0 ? (
+                <div className="text-center py-12">
+                  <span className="text-4xl mb-2 block">📊</span>
+                  <p className="text-gray-500">No mood history yet</p>
+                  <p className="text-sm text-gray-400">Start tracking your mood to build your emotional journey</p>
+                </div>
+              ) : (
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {moodEntries.map((entry) => (
+                    <div key={entry.id} className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center border-2 border-gray-200">
+                        <span className="text-xl">{entry.emoji}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="font-medium text-gray-900 capitalize">{entry.mood}</p>
+                          <span className="text-sm text-gray-500">{formatDate(entry.createdAt)}</span>
+                        </div>
+                        {entry.notes && (
+                          <p className="text-sm text-gray-600 mb-2">{entry.notes}</p>
+                        )}
+                        <div className="flex items-center space-x-2">
+                          <div className="w-16 bg-gray-200 rounded-full h-1.5">
+                            <div 
+                              className="h-1.5 rounded-full bg-blue-500" 
+                              style={{ width: `${(getMoodScore(entry.mood) / 10) * 100}%` }}
+                            />
+                          </div>
+                          <span className="text-xs text-gray-500">{getMoodScore(entry.mood)}/10</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
+
+  function getMoodScore(mood: string): number {
+    const scores: Record<string, number> = {
+      happy: 8,
+      excited: 9,
+      calm: 7,
+      content: 6,
+      tired: 4,
+      stressed: 3,
+      sad: 2,
+      anxious: 3
+    };
+    return scores[mood] || 5;
+  }
 }
