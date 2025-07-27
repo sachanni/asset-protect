@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Coins, Users, Heart, Cloud, Plus, ChevronDown, LogOut } from "lucide-react";
+import { Shield, Coins, Users, Heart, Cloud, Plus, ChevronDown, LogOut, Bell } from "lucide-react";
 import WellBeingAlert from "@/components/well-being-alert";
 import AssetCard from "@/components/asset-card";
 import NomineeCard from "@/components/nominee-card";
@@ -145,7 +145,7 @@ export default function Dashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center">
@@ -176,12 +176,27 @@ export default function Dashboard() {
             <CardContent className="p-6">
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                  <Heart className="w-6 h-6 text-orange-500" />
+                  <Bell className="w-6 h-6 text-orange-500" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Last Check-in</p>
+                  <p className="text-sm font-medium text-gray-600">Alert Frequency</p>
+                  <p className="text-2xl font-bold text-gray-900 capitalize">
+                    {user?.alertFrequency || 'Daily'}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                  <Heart className="w-6 h-6 text-green-500" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Last Response</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {stats?.lastCheckin ? new Date(stats.lastCheckin).toLocaleDateString() : 'Never'}
+                    {stats?.lastCheckin ? 'Just now' : 'Never'}
                   </p>
                 </div>
               </div>
@@ -202,7 +217,42 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Well-being Check Alert */}
+        {/* Well-being Check Section */}
+        <Card className="mb-8">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                  <Heart className="w-6 h-6 text-green-500" />
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Well-being Check</h3>
+                  <p className="text-gray-600">
+                    Your next check is scheduled based on your {user?.alertFrequency || 'daily'} frequency
+                  </p>
+                </div>
+              </div>
+              <div className="flex space-x-3">
+                <Button 
+                  onClick={() => wellBeingMutation.mutate()}
+                  disabled={wellBeingMutation.isPending}
+                  className="bg-green-500 hover:bg-green-600 text-white"
+                >
+                  <Heart className="w-4 h-4 mr-2" />
+                  {wellBeingMutation.isPending ? "Confirming..." : "I'm Okay"}
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => setLocation("/well-being-settings")}
+                >
+                  Configure
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Well-being Check Alert - Only show when needed */}
         {showWellBeingAlert && (
           <WellBeingAlert 
             onConfirm={() => wellBeingMutation.mutate()}
