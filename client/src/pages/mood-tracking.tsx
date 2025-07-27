@@ -19,7 +19,7 @@ export default function MoodTrackingPage() {
   const [, setLocation] = useLocation();
 
   const { data: moodEntries = [], isLoading } = useQuery<MoodEntry[]>({
-    queryKey: ['/api/mood'],
+    queryKey: ['/api/mood/entries'],
   });
 
   const { data: latestMood } = useQuery<MoodEntry>({
