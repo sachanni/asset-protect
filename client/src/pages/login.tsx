@@ -9,7 +9,7 @@ import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
@@ -25,6 +25,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function Login() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [loginMethod, setLoginMethod] = useState<"otp" | "password">("otp");
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [otpValue, setOtpValue] = useState("");
@@ -76,11 +77,14 @@ export default function Login() {
       return response.json();
     },
     onSuccess: () => {
+      // Invalidate auth query to refresh user state
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "Login Successful",
         description: "Welcome back!",
       });
-      setLocation("/");
+      // Small delay to allow query invalidation to complete
+      setTimeout(() => setLocation("/"), 100);
     },
     onError: (error: Error) => {
       toast({

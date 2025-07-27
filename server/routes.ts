@@ -65,11 +65,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  // Combined authentication middleware (session or Replit auth)
+  const combinedAuth = (req: any, res: any, next: any) => {
+    // Check session-based auth first
+    if (req.session?.userId) {
+      req.userId = req.session.userId;
+      return next();
+    } 
+    // Check Replit auth
+    else if (req.user?.claims?.sub) {
+      req.userId = req.user.claims.sub;
+      return next();
+    }
+    res.status(401).json({ message: "Unauthorized" });
+  };
+
+  // Auth routes - first check session auth, then Replit auth
+  app.get('/api/auth/user', async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      let userId;
+      
+      // Check session-based auth first
+      if (req.session?.userId) {
+        userId = req.session.userId;
+      } 
+      // Fallback to Replit auth
+      else if (req.user?.claims?.sub) {
+        userId = req.user.claims.sub;
+      } 
+      else {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
       const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -212,9 +244,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Protected routes
-  app.get('/api/dashboard/stats', isAuthenticated, async (req: any, res) => {
+  app.get('/api/dashboard/stats', combinedAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId;
       
       const [assets, nominees, alerts] = await Promise.all([
         storage.getAssets(userId),
@@ -238,9 +270,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Asset management
-  app.get('/api/assets', isAuthenticated, async (req: any, res) => {
+  app.get('/api/assets', combinedAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId;
       const assets = await storage.getAssets(userId);
       res.json(assets);
     } catch (error: any) {
@@ -248,9 +280,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/assets', isAuthenticated, async (req: any, res) => {
+  app.post('/api/assets', combinedAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId;
       const assetData = assetSchema.parse(req.body);
       
       const asset = await storage.createAsset({
@@ -265,9 +297,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Nominee management
-  app.get('/api/nominees', isAuthenticated, async (req: any, res) => {
+  app.get('/api/nominees', combinedAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId;
       const nominees = await storage.getNominees(userId);
       res.json(nominees);
     } catch (error: any) {
@@ -275,9 +307,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/nominees', isAuthenticated, async (req: any, res) => {
+  app.post('/api/nominees', combinedAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId;
       const nomineeData = nomineeSchema.parse(req.body);
       
       const nominee = await storage.createNominee({
@@ -292,9 +324,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Well-being check
-  app.post('/api/wellbeing/confirm', isAuthenticated, async (req: any, res) => {
+  app.post('/api/wellbeing/confirm', combinedAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId;
       
       await storage.updateUserWellBeing(userId);
       
@@ -305,7 +337,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes
-  app.get('/api/admin/stats', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/stats', combinedAuth, async (req: any, res) => {
     try {
       // TODO: Add admin role check
       const users = await storage.getAllUsers();
@@ -325,7 +357,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/admin/pending-validations', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/pending-validations', combinedAuth, async (req: any, res) => {
     try {
       // TODO: Add admin role check
       const usersWithExceededLimits = await storage.getUsersWithExceededLimits();
@@ -342,7 +374,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/admin/approve-death-validation', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/approve-death-validation', combinedAuth, async (req: any, res) => {
     try {
       // TODO: Add admin role check
       const { userId, notes } = req.body;
