@@ -257,7 +257,7 @@ export default function Dashboard() {
                 )}
                 <Button 
                   className="w-full bg-green-500 hover:bg-green-600"
-                  onClick={() => setActiveTab("nominees")}
+                  onClick={() => setLocation("/add-nominee")}
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Nominee
@@ -289,22 +289,45 @@ export default function Dashboard() {
   }
 
   function renderNominees() {
+    const { data: nominees = [] } = useQuery({
+      queryKey: ["/api/nominees"],
+      enabled: isAuthenticated,
+    });
+
     return (
       <div>
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Nominees</h1>
           <p className="text-gray-600">Manage your nominated family members</p>
         </div>
-        <div className="text-center py-12">
-          <p className="text-gray-500 mb-4">No nominees added yet</p>
-          <Button 
-            className="bg-green-500 hover:bg-green-600"
-            onClick={() => setLocation("/add-nominee")}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Nominee
-          </Button>
-        </div>
+        
+        {nominees.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500 mb-4">No nominees added yet</p>
+            <Button 
+              className="bg-green-500 hover:bg-green-600"
+              onClick={() => setLocation("/add-nominee")}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Nominee
+            </Button>
+          </div>
+        ) : (
+          <div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
+              {nominees.map((nominee: any) => (
+                <NomineeCard key={nominee.id} nominee={nominee} />
+              ))}
+            </div>
+            <Button 
+              className="bg-green-500 hover:bg-green-600"
+              onClick={() => setLocation("/add-nominee")}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Another Nominee
+            </Button>
+          </div>
+        )}
       </div>
     );
   }

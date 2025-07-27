@@ -63,7 +63,7 @@ export default function AddNominee() {
       });
       queryClient.invalidateQueries({ queryKey: ["/api/nominees"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
-      setLocation("/dashboard");
+      setLocation("/");
     },
     onError: (error: Error) => {
       toast({
@@ -84,7 +84,7 @@ export default function AddNominee() {
         <div className="mb-6">
           <Button
             variant="ghost"
-            onClick={() => setLocation("/dashboard")}
+            onClick={() => setLocation("/")}
             className="mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -180,7 +180,7 @@ export default function AddNominee() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setLocation("/dashboard")}
+                  onClick={() => setLocation("/")}
                   className="flex-1"
                 >
                   Cancel
