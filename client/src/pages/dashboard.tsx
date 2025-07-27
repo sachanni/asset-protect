@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Coins, Users, Heart, Cloud, Plus, ChevronDown } from "lucide-react";
+import { Shield, Coins, Users, Heart, Cloud, Plus, ChevronDown, LogOut } from "lucide-react";
 import WellBeingAlert from "@/components/well-being-alert";
 import AssetCard from "@/components/asset-card";
 import NomineeCard from "@/components/nominee-card";
@@ -411,14 +411,24 @@ export default function Dashboard() {
                 <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
                 Active
               </Badge>
-              {/* Profile Menu */}
-              <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 cursor-pointer">
-                <Avatar className="w-8 h-8">
-                  <AvatarImage src={user?.profileImageUrl} className="object-cover" />
-                  <AvatarFallback>{user?.firstName?.[0]}{user?.lastName?.[0]}</AvatarFallback>
-                </Avatar>
-                <span className="text-sm font-medium text-gray-700">{user?.fullName || `${user?.firstName} ${user?.lastName}`}</span>
-                <ChevronDown className="w-4 h-4 text-gray-400" />
+              {/* Profile and Logout */}
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2">
+                  <Avatar className="w-8 h-8">
+                    <AvatarImage src={user?.profileImageUrl} className="object-cover" />
+                    <AvatarFallback>{user?.firstName?.[0]}{user?.lastName?.[0]}</AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium text-gray-700">{user?.fullName || `${user?.firstName} ${user?.lastName}`}</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => window.location.href = "/api/logout"}
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  <LogOut className="w-4 h-4 mr-1" />
+                  Logout
+                </Button>
               </div>
             </div>
           </div>
