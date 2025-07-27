@@ -472,55 +472,55 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-white/80 backdrop-blur-md shadow-sm border-b border-white/20 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-r from-primary-600 to-primary-500 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 gradient-primary rounded-xl flex items-center justify-center shadow-lg">
                   <Shield className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-xl font-bold text-gray-900">SecureVault</span>
+                <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">SecureVault</span>
               </div>
-              <nav className="hidden md:flex space-x-8">
+              <nav className="hidden md:flex space-x-2">
                 <button 
                   onClick={() => setActiveTab("dashboard")}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     activeTab === "dashboard" 
-                      ? "text-primary-500 hover:text-primary-600" 
-                      : "text-gray-600 hover:text-gray-900"
+                      ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg" 
+                      : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
                   }`}
                 >
                   Dashboard
                 </button>
                 <button 
                   onClick={() => setActiveTab("assets")}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     activeTab === "assets" 
-                      ? "text-primary-500 hover:text-primary-600" 
-                      : "text-gray-600 hover:text-gray-900"
+                      ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg" 
+                      : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
                   }`}
                 >
                   Assets
                 </button>
                 <button 
                   onClick={() => setActiveTab("nominees")}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     activeTab === "nominees" 
-                      ? "text-primary-500 hover:text-primary-600" 
-                      : "text-gray-600 hover:text-gray-900"
+                      ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg" 
+                      : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
                   }`}
                 >
                   Nominees
                 </button>
                 <button 
                   onClick={() => setActiveTab("settings")}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     activeTab === "settings" 
-                      ? "text-primary-500 hover:text-primary-600" 
-                      : "text-gray-600 hover:text-gray-900"
+                      ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg" 
+                      : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
                   }`}
                 >
                   Settings

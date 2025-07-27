@@ -179,78 +179,81 @@ export default function AssetPortfolioPage() {
   const visibleColumns = columns.filter(col => col.visible);
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setLocation("/")}
-            className="mr-4"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Asset Portfolio</h1>
-            <p className="text-gray-600">Manage your digital assets and legacy information securely</p>
-          </div>
-        </div>
-        <Button 
-          onClick={() => setLocation("/add-asset")}
-          className="bg-blue-500 hover:bg-blue-600 text-white"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Asset
-        </Button>
-      </div>
-
-      {/* Controls */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="All Categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  {assetCategories.map((category) => (
-                    <SelectItem key={category.value} value={category.value}>
-                      {category.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      <div className="max-w-7xl mx-auto p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setLocation("/")}
+              className="mr-4 hover:bg-white/50 transition-colors duration-200"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Asset Portfolio
+              </h1>
+              <p className="text-gray-600 mt-1">Manage your digital assets and legacy information securely</p>
             </div>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  <Settings className="w-4 h-4 mr-2" />
-                  Columns
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                {columns.map((column) => (
-                  <DropdownMenuCheckboxItem
-                    key={column.key}
-                    checked={column.visible}
-                    onCheckedChange={() => handleColumnToggle(column.key)}
-                  >
-                    {column.label}
-                  </DropdownMenuCheckboxItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
-        </CardContent>
-      </Card>
+          <Button 
+            onClick={() => setLocation("/add-asset")}
+            className="bg-gradient-assets hover:scale-105 transition-all duration-200 shadow-lg text-gray-800 border-0"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Asset
+          </Button>
+        </div>
 
-      {/* Assets Table */}
-      <Card>
-        <CardContent className="p-0">
+        {/* Controls */}
+        <Card className="hover-lift border-0 shadow-lg bg-white/70 backdrop-blur-sm">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-48 bg-white/80 border-gray-200">
+                    <SelectValue placeholder="All Categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {assetCategories.map((category) => (
+                      <SelectItem key={category.value} value={category.value}>
+                        {category.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="bg-white/80 border-gray-200 hover:bg-white/90">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Columns
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  {columns.map((column) => (
+                    <DropdownMenuCheckboxItem
+                      key={column.key}
+                      checked={column.visible}
+                      onCheckedChange={() => handleColumnToggle(column.key)}
+                    >
+                      {column.label}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Assets Table */}
+        <Card className="hover-lift border-0 shadow-lg bg-white/70 backdrop-blur-sm">
+          <CardContent className="p-0">
           <Table>
             <TableHeader>
               <TableRow>
@@ -301,17 +304,17 @@ export default function AssetPortfolioPage() {
                 </TableRow>
               ) : (
                 sortedAssets.map((asset) => (
-                  <TableRow key={asset.id} className="hover:bg-gray-50">
+                  <TableRow key={asset.id} className="hover:bg-blue-50/50 transition-colors duration-200">
                     {visibleColumns.map((column) => {
                       switch (column.key) {
                         case 'assetType':
                           return (
                             <TableCell key={column.key}>
-                              <div className="flex items-center space-x-2">
-                                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                              <div className="flex items-center space-x-3">
+                                <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center shadow-lg">
                                   {getAssetIcon(asset.assetType)}
                                 </div>
-                                <span className="font-medium">
+                                <span className="font-semibold text-gray-800">
                                   {assetTypeLabels[asset.assetType as keyof typeof assetTypeLabels] || asset.assetType}
                                 </span>
                               </div>
@@ -398,16 +401,17 @@ export default function AssetPortfolioPage() {
               )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Summary */}
-      {!isLoading && sortedAssets.length > 0 && (
-        <div className="text-center text-sm text-gray-500">
-          Showing {sortedAssets.length} of {assets.length} assets
-          {selectedCategory !== 'all' && ` in ${assetCategories.find(c => c.value === selectedCategory)?.label}`}
-        </div>
-      )}
+        {/* Summary */}
+        {!isLoading && sortedAssets.length > 0 && (
+          <div className="text-center text-sm text-gray-500">
+            Showing {sortedAssets.length} of {assets.length} assets
+            {selectedCategory !== 'all' && ` in ${assetCategories.find(c => c.value === selectedCategory)?.label}`}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

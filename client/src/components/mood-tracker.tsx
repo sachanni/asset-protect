@@ -14,14 +14,14 @@ interface MoodOption {
 }
 
 const moodOptions: MoodOption[] = [
-  { mood: 'happy', emoji: '😊', label: 'Happy', color: 'bg-yellow-100 hover:bg-yellow-200 border-yellow-300' },
-  { mood: 'excited', emoji: '🤩', label: 'Excited', color: 'bg-orange-100 hover:bg-orange-200 border-orange-300' },
-  { mood: 'calm', emoji: '😌', label: 'Calm', color: 'bg-blue-100 hover:bg-blue-200 border-blue-300' },
-  { mood: 'content', emoji: '😐', label: 'Content', color: 'bg-gray-100 hover:bg-gray-200 border-gray-300' },
-  { mood: 'tired', emoji: '😴', label: 'Tired', color: 'bg-purple-100 hover:bg-purple-200 border-purple-300' },
-  { mood: 'stressed', emoji: '😰', label: 'Stressed', color: 'bg-red-100 hover:bg-red-200 border-red-300' },
-  { mood: 'sad', emoji: '😢', label: 'Sad', color: 'bg-blue-100 hover:bg-blue-200 border-blue-300' },
-  { mood: 'anxious', emoji: '😟', label: 'Anxious', color: 'bg-yellow-100 hover:bg-yellow-200 border-yellow-300' },
+  { mood: 'happy', emoji: '😊', label: 'Happy', color: 'mood-happy hover:scale-105 border-yellow-300' },
+  { mood: 'excited', emoji: '🤩', label: 'Excited', color: 'mood-excited hover:scale-105 border-orange-300' },
+  { mood: 'calm', emoji: '😌', label: 'Calm', color: 'mood-calm hover:scale-105 border-blue-300' },
+  { mood: 'content', emoji: '😐', label: 'Content', color: 'mood-content hover:scale-105 border-purple-300' },
+  { mood: 'tired', emoji: '😴', label: 'Tired', color: 'mood-tired hover:scale-105 border-red-300' },
+  { mood: 'stressed', emoji: '😰', label: 'Stressed', color: 'mood-stressed hover:scale-105 border-pink-300' },
+  { mood: 'sad', emoji: '😢', label: 'Sad', color: 'mood-sad hover:scale-105 border-teal-300' },
+  { mood: 'anxious', emoji: '😟', label: 'Anxious', color: 'mood-anxious hover:scale-105 border-orange-300' },
 ];
 
 interface MoodTrackerProps {
@@ -81,16 +81,16 @@ export default function MoodTracker({ compact = false }: MoodTrackerProps) {
 
   if (compact) {
     return (
-      <Card>
-        <CardContent className="p-4">
+      <Card className="hover-lift border-0 shadow-lg bg-gradient-mood">
+        <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center">
-                <span className="text-lg">{latestMood?.emoji || '😊'}</span>
+              <div className="w-12 h-12 bg-white/80 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
+                <span className="text-2xl">{latestMood?.emoji || '😊'}</span>
               </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-semibold text-gray-900">Current Mood</h3>
-                <p className="text-xs text-gray-600 capitalize">
+              <div className="ml-4">
+                <h3 className="text-lg font-bold text-gray-800">Current Mood</h3>
+                <p className="text-sm text-gray-600 capitalize font-medium">
                   {latestMood?.mood || 'Not set today'}
                 </p>
               </div>
@@ -102,7 +102,11 @@ export default function MoodTracker({ compact = false }: MoodTrackerProps) {
                     key={mood.mood}
                     variant="outline"
                     size="sm"
-                    className={`w-8 h-8 p-0 ${selectedMood?.mood === mood.mood ? mood.color : ''}`}
+                    className={`w-10 h-10 p-0 border-2 bg-white/70 backdrop-blur-sm transition-all duration-200 hover:scale-110 ${
+                      selectedMood?.mood === mood.mood 
+                        ? `${mood.color} border-white shadow-lg` 
+                        : 'hover:bg-white/90 border-gray-200'
+                    }`}
                     onClick={() => {
                       setSelectedMood(mood);
                       moodMutation.mutate({
@@ -112,19 +116,19 @@ export default function MoodTracker({ compact = false }: MoodTrackerProps) {
                     }}
                     disabled={moodMutation.isPending}
                   >
-                    <span className="text-sm">{mood.emoji}</span>
+                    <span className="text-lg">{mood.emoji}</span>
                   </Button>
                 ))}
               </div>
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-xs text-gray-500 h-6"
+                className="text-xs text-gray-600 hover:text-gray-800 h-6 transition-colors duration-200"
                 onClick={() => {
                   window.location.href = '/mood-tracking';
                 }}
               >
-                View All →
+                View All Moods →
               </Button>
             </div>
           </div>
@@ -134,27 +138,29 @@ export default function MoodTracker({ compact = false }: MoodTrackerProps) {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <span className="text-lg mr-2">😊</span>
+    <Card className="hover-lift border-0 shadow-lg bg-gradient-mood">
+      <CardHeader className="text-center">
+        <CardTitle className="flex items-center justify-center text-xl font-bold text-gray-800">
+          <span className="text-2xl mr-3">😊</span>
           How are you feeling today?
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         {/* Mood Selection Grid */}
         <div className="grid grid-cols-4 gap-3">
           {moodOptions.map((mood) => (
             <Button
               key={mood.mood}
               variant="outline"
-              className={`h-16 flex flex-col items-center justify-center space-y-1 ${
-                selectedMood?.mood === mood.mood ? mood.color : ''
+              className={`h-20 flex flex-col items-center justify-center border-2 bg-white/70 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-lg ${
+                selectedMood?.mood === mood.mood 
+                  ? `${mood.color} border-white shadow-xl scale-105` 
+                  : 'hover:bg-white/90 border-gray-200'
               }`}
               onClick={() => setSelectedMood(mood)}
             >
-              <span className="text-2xl">{mood.emoji}</span>
-              <span className="text-xs font-medium">{mood.label}</span>
+              <span className="text-3xl mb-1">{mood.emoji}</span>
+              <span className="text-xs font-semibold text-gray-700">{mood.label}</span>
             </Button>
           ))}
         </div>
@@ -179,7 +185,7 @@ export default function MoodTracker({ compact = false }: MoodTrackerProps) {
               <Button
                 onClick={handleMoodSubmit}
                 disabled={moodMutation.isPending}
-                className="flex-1"
+                className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg transition-all duration-200 hover:scale-105"
               >
                 {moodMutation.isPending ? "Recording..." : "Record Mood"}
               </Button>
@@ -190,6 +196,7 @@ export default function MoodTracker({ compact = false }: MoodTrackerProps) {
                   setNotes('');
                 }}
                 disabled={moodMutation.isPending}
+                className="border-gray-300 hover:bg-gray-50 transition-colors duration-200"
               >
                 Cancel
               </Button>
