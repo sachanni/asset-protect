@@ -24,8 +24,11 @@ import {
   BarChart3,
   TrendingUp,
   Calendar,
-  Clock
+  Clock,
+  ArrowLeft,
+  User
 } from 'lucide-react';
+import { useLocation } from 'wouter';
 import { 
   LineChart, 
   Line, 
@@ -69,6 +72,7 @@ interface AdminUser {
 export default function AdminDashboard() {
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [actionReason, setActionReason] = useState('');
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -166,6 +170,46 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      {/* Navigation Header */}
+      <header className="bg-white/80 backdrop-blur-md shadow-sm border-b border-white/20 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setLocation('/')}
+                className="text-gray-600 hover:text-gray-900"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to User Panel
+              </Button>
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 gradient-primary rounded-xl flex items-center justify-center shadow-lg">
+                  <Shield className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">SecureVault Admin</span>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                <Shield className="w-4 h-4 mr-1" />
+                Administrator Access
+              </Badge>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => window.location.href = "/api/logout"}
+                className="text-gray-600 hover:text-gray-900"
+              >
+                <User className="w-4 h-4 mr-1" />
+                Logout
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
       <div className="max-w-7xl mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -174,12 +218,6 @@ export default function AdminDashboard() {
               Admin Dashboard
             </h1>
             <p className="text-gray-600 mt-1">Monitor user activity and manage system operations</p>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Shield className="w-6 h-6 text-blue-600" />
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-              Administrator Access
-            </Badge>
           </div>
         </div>
 

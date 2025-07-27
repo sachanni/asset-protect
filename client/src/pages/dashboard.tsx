@@ -533,6 +533,18 @@ export default function Dashboard() {
                 <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
                 Active
               </Badge>
+              {/* Admin Panel Access */}
+              {user?.isAdmin && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setLocation("/admin")}
+                  className="border-purple-200 text-purple-700 hover:bg-purple-50"
+                >
+                  <Shield className="w-4 h-4 mr-1" />
+                  Admin Panel
+                </Button>
+              )}
               {/* Profile and Logout */}
               <div className="flex items-center space-x-3">
                 <div className="flex items-center space-x-2">
