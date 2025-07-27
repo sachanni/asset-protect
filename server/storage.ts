@@ -27,6 +27,7 @@ export interface IStorage {
   // App-specific user operations
   getUserByMobile(mobileNumber: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUserById(userId: string): Promise<User | undefined>;
   createUser(userData: {
     fullName: string;
     dateOfBirth: Date;
@@ -37,6 +38,7 @@ export interface IStorage {
     password: string;
   }): Promise<User>;
   updateUserWellBeing(userId: string): Promise<void>;
+  updateUserWellBeingSettings(userId: string, settings: any): Promise<void>;
   incrementWellBeingCounter(userId: string): Promise<void>;
   getUsersWithExceededLimits(): Promise<User[]>;
   
@@ -93,6 +95,11 @@ export class DatabaseStorage implements IStorage {
 
   async getUserByEmail(email: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async getUserById(userId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
     return user;
   }
 
@@ -273,6 +280,20 @@ export class DatabaseStorage implements IStorage {
         completedAt: new Date(),
       })
       .where(eq(adminActions.id, actionId));
+  }
+
+  async updateUserWellBeingSettings(userId: string, settings: any): Promise<void> {
+    await db.update(users)
+      .set({
+        alertFrequency: settings.alertFrequency,
+        customDays: settings.customDays,
+        alertTime: settings.alertTime,
+        enableSMS: settings.enableSMS,
+        enableEmail: settings.enableEmail,  
+        maxWellBeingLimit: settings.maxWellBeingLimit,
+        escalationEnabled: settings.escalationEnabled,
+      })
+      .where(eq(users.id, userId));
   }
 }
 

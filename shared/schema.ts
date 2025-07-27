@@ -43,6 +43,12 @@ export const users = pgTable("users", {
   lastWellBeingCheck: timestamp("last_well_being_check"),
   wellBeingCounter: integer("well_being_counter").default(0),
   maxWellBeingLimit: integer("max_well_being_limit").default(15),
+  alertFrequency: varchar("alert_frequency").default('daily'),
+  customDays: integer("custom_days"),
+  alertTime: varchar("alert_time").default('09:00'),
+  enableSMS: boolean("enable_sms").default(true),
+  enableEmail: boolean("enable_email").default(true),
+  escalationEnabled: boolean("escalation_enabled").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

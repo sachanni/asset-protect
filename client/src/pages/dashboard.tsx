@@ -391,7 +391,12 @@ export default function Dashboard() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Check-in Frequency</label>
                   <p className="text-gray-600">Configure how often you want to receive well-being check alerts</p>
                 </div>
-                <Button variant="outline">Configure Alerts</Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => setLocation("/well-being-settings")}
+                >
+                  Configure Alerts
+                </Button>
               </div>
             </CardContent>
           </Card>

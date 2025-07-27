@@ -60,6 +60,16 @@ const nomineeSchema = z.object({
   email: z.string().optional(),
 });
 
+const wellBeingSettingsSchema = z.object({
+  alertFrequency: z.enum(["daily", "weekly", "custom"]),
+  customDays: z.number().min(1).max(30).optional(),
+  alertTime: z.string(),
+  enableSMS: z.boolean(),
+  enableEmail: z.boolean(),
+  maxMissedAlerts: z.number().min(1).max(50),
+  escalationEnabled: z.boolean(),
+});
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
@@ -353,6 +363,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true, message: "Well-being confirmed" });
     } catch (error: any) {
       res.status(500).json({ message: "Failed to confirm well-being", error: error.message });
+    }
+  });
+
+  // Well-being settings
+  app.get('/api/wellbeing/settings', combinedAuth, async (req: any, res) => {
+    try {
+      const userId = req.userId;
+      const user = await storage.getUserById(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Return current user settings
+      const settings = {
+        alertFrequency: user.alertFrequency || 'daily',
+        customDays: user.customDays || 1,
+        alertTime: user.alertTime || '09:00',
+        enableSMS: user.enableSMS !== false,
+        enableEmail: user.enableEmail !== false,
+        maxMissedAlerts: user.maxWellBeingLimit || 15,
+        escalationEnabled: user.escalationEnabled !== false,
+      };
+      
+      res.json(settings);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch settings", error: error.message });
+    }
+  });
+
+  app.put('/api/wellbeing/settings', combinedAuth, async (req: any, res) => {
+    try {
+      const userId = req.userId;
+      const settingsData = wellBeingSettingsSchema.parse(req.body);
+      
+      await storage.updateUserWellBeingSettings(userId, {
+        alertFrequency: settingsData.alertFrequency,
+        customDays: settingsData.customDays,
+        alertTime: settingsData.alertTime,
+        enableSMS: settingsData.enableSMS,
+        enableEmail: settingsData.enableEmail,
+        maxWellBeingLimit: settingsData.maxMissedAlerts,
+        escalationEnabled: settingsData.escalationEnabled,
+      });
+      
+      res.json({ success: true, message: "Settings updated successfully" });
+    } catch (error: any) {
+      res.status(400).json({ message: "Failed to update settings", error: error.message });
+    }
+  });
+
+  app.post('/api/wellbeing/test-alert', combinedAuth, async (req: any, res) => {
+    try {
+      const userId = req.userId;
+      const user = await storage.getUserById(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // TODO: Implement actual SMS/Email sending
+      // For now, just log the test alert
+      console.log(`Test alert sent to user ${userId} (${user.email}, ${user.mobileNumber})`);
+      
+      res.json({ success: true, message: "Test alert sent successfully" });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to send test alert", error: error.message });
     }
   });
 

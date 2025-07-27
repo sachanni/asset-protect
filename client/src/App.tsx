@@ -13,6 +13,7 @@ import Dashboard from "@/pages/dashboard";
 import AdminDashboard from "@/pages/admin-dashboard";
 import AddNominee from "@/pages/add-nominee";
 import AddAsset from "@/pages/add-asset";
+import WellBeingSettings from "@/pages/well-being-settings";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -32,6 +33,7 @@ function Router() {
           <Route path="/admin" component={AdminDashboard} />
           <Route path="/add-nominee" component={AddNominee} />
           <Route path="/add-asset" component={AddAsset} />
+          <Route path="/well-being-settings" component={WellBeingSettings} />
         </>
       )}
       <Route component={NotFound} />
