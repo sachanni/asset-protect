@@ -4,6 +4,7 @@ import {
   assets,
   wellBeingAlerts,
   adminActions,
+  adminLogs,
   moodEntries,
   type User,
   type UpsertUser,
@@ -15,6 +16,8 @@ import {
   type InsertWellBeingAlert,
   type AdminAction,
   type InsertAdminAction,
+  type AdminLog,
+  type InsertAdminLog,
   type MoodEntry,
   type InsertMoodEntry,
 } from "@shared/schema";

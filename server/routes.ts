@@ -542,12 +542,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get fresh user data to check admin status
       const user = await storage.getUserById(req.user.id);
-      if (!user || !user.isAdmin) {
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      if (!user.isAdmin) {
+        console.log(`User ${user.email} attempted admin access but is not admin`);
         return res.status(403).json({ message: "Admin access required" });
       }
       
+      console.log(`Admin access granted for ${user.email}`);
       next();
     } catch (error) {
+      console.error('Admin middleware error:', error);
       return res.status(500).json({ message: "Server error checking admin status" });
     }
   };
