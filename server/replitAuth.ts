@@ -41,12 +41,14 @@ export function getSession() {
     store: sessionStore,
     resave: false,
     saveUninitialized: true, // Allow saving uninitialized sessions for registration flow
+    name: 'connect.sid', // Explicit session name
     cookie: {
       httpOnly: true,
       secure: false, // Disable secure in development
       maxAge: sessionTtl,
       sameSite: 'lax', // Allow cross-site requests
       path: '/', // Ensure cookie is available for all paths
+      domain: undefined, // Let browser handle domain
     },
   });
 }
