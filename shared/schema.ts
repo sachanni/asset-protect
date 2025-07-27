@@ -66,6 +66,38 @@ export const moodEntries = pgTable("mood_entries", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Self-care recommendations table
+export const selfCareRecommendations = pgTable("self_care_recommendations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  recommendationType: varchar("recommendation_type").notNull(), // breathing, exercise, meditation, social, nutrition, sleep
+  title: varchar("title").notNull(),
+  description: text("description").notNull(),
+  instructions: text("instructions"),
+  durationMinutes: integer("duration_minutes"),
+  contextTrigger: varchar("context_trigger"), // stress, sadness, anxiety, fatigue, etc.
+  priority: varchar("priority").default('medium'), // low, medium, high
+  isCompleted: boolean("is_completed").default(false),
+  completedAt: timestamp("completed_at"),
+  feedback: varchar("feedback"), // helpful, not_helpful, skip
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// User wellness preferences table
+export const wellnessPreferences = pgTable("wellness_preferences", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  preferredActivities: text("preferred_activities").array(), // meditation, exercise, reading, music, etc.
+  availableTime: varchar("available_time").default('15'), // 5, 15, 30, 60 minutes
+  notificationFrequency: varchar("notification_frequency").default('smart'), // smart, daily, weekly, never
+  personalityType: varchar("personality_type"), // introvert, extrovert, ambivert
+  stressIndicators: text("stress_indicators").array(), // work, relationships, health, finances
+  calmingActivities: text("calming_activities").array(),
+  energizingActivities: text("energizing_activities").array(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const nominees = pgTable("nominees", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id),
@@ -152,6 +184,18 @@ export const insertMoodEntrySchema = createInsertSchema(moodEntries).omit({
   createdAt: true,
 });
 
+export const insertSelfCareRecommendationSchema = createInsertSchema(selfCareRecommendations).omit({
+  id: true,
+  createdAt: true,
+  completedAt: true,
+});
+
+export const insertWellnessPreferencesSchema = createInsertSchema(wellnessPreferences).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -166,6 +210,10 @@ export type AdminAction = typeof adminActions.$inferSelect;
 export type InsertAdminAction = z.infer<typeof insertAdminActionSchema>;
 export type MoodEntry = typeof moodEntries.$inferSelect;
 export type InsertMoodEntry = z.infer<typeof insertMoodEntrySchema>;
+export type SelfCareRecommendation = typeof selfCareRecommendations.$inferSelect;
+export type InsertSelfCareRecommendation = z.infer<typeof insertSelfCareRecommendationSchema>;
+export type WellnessPreferences = typeof wellnessPreferences.$inferSelect;
+export type InsertWellnessPreferences = z.infer<typeof insertWellnessPreferencesSchema>;
 
 // Admin activity logs
 export const adminLogs = pgTable("admin_logs", {

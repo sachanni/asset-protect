@@ -6,6 +6,8 @@ import {
   adminActions,
   adminLogs,
   moodEntries,
+  selfCareRecommendations,
+  wellnessPreferences,
   type User,
   type UpsertUser,
   type Nominee,
@@ -20,6 +22,10 @@ import {
   type InsertAdminLog,
   type MoodEntry,
   type InsertMoodEntry,
+  type SelfCareRecommendation,
+  type InsertSelfCareRecommendation,
+  type WellnessPreferences,
+  type InsertWellnessPreferences,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, sql } from "drizzle-orm";
@@ -74,6 +80,18 @@ export interface IStorage {
   createMoodEntry(mood: InsertMoodEntry): Promise<MoodEntry>;
   getUserMoodEntries(userId: string, limit?: number): Promise<MoodEntry[]>;
   getUserLatestMood(userId: string): Promise<MoodEntry | undefined>;
+
+  // Self-care recommendation operations
+  createSelfCareRecommendation(recommendation: InsertSelfCareRecommendation): Promise<SelfCareRecommendation>;
+  getSelfCareRecommendationsByUserId(userId: string): Promise<SelfCareRecommendation[]>;
+  updateSelfCareRecommendation(id: string, updates: Partial<SelfCareRecommendation>): Promise<void>;
+  deleteSelfCareRecommendation(id: string): Promise<void>;
+  generateRecommendationsForUser(userId: string): Promise<SelfCareRecommendation[]>;
+
+  // Wellness preferences operations
+  createWellnessPreferences(preferences: InsertWellnessPreferences): Promise<WellnessPreferences>;
+  getWellnessPreferencesByUserId(userId: string): Promise<WellnessPreferences | null>;
+  updateWellnessPreferences(userId: string, updates: Partial<WellnessPreferences>): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -371,6 +389,171 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(adminLogs)
       .orderBy(desc(adminLogs.createdAt))
       .limit(limit);
+  }
+
+  // Self-care recommendation operations
+  async createSelfCareRecommendation(recommendation: InsertSelfCareRecommendation): Promise<SelfCareRecommendation> {
+    const [newRecommendation] = await db
+      .insert(selfCareRecommendations)
+      .values(recommendation)
+      .returning();
+    return newRecommendation;
+  }
+
+  async getSelfCareRecommendationsByUserId(userId: string): Promise<SelfCareRecommendation[]> {
+    return await db
+      .select()
+      .from(selfCareRecommendations)
+      .where(eq(selfCareRecommendations.userId, userId))
+      .orderBy(desc(selfCareRecommendations.createdAt));
+  }
+
+  async updateSelfCareRecommendation(id: string, updates: Partial<SelfCareRecommendation>): Promise<void> {
+    await db
+      .update(selfCareRecommendations)
+      .set(updates)
+      .where(eq(selfCareRecommendations.id, id));
+  }
+
+  async deleteSelfCareRecommendation(id: string): Promise<void> {
+    await db
+      .delete(selfCareRecommendations)
+      .where(eq(selfCareRecommendations.id, id));
+  }
+
+  async generateRecommendationsForUser(userId: string): Promise<SelfCareRecommendation[]> {
+    // Get user's recent moods and wellness preferences
+    const recentMoods = await this.getUserMoodEntries(userId, 7); // Last 7 entries
+    const wellnessPrefs = await this.getWellnessPreferencesByUserId(userId);
+    
+    const recommendations: InsertSelfCareRecommendation[] = [];
+    
+    // Analyze mood patterns and generate contextual recommendations
+    if (recentMoods.length > 0) {
+      const latestMood = recentMoods[0];
+      const availableTime = wellnessPrefs?.availableTime || '15';
+      
+      // Generate recommendations based on current mood
+      switch (latestMood.mood.toLowerCase()) {
+        case 'stressed':
+        case 'anxious':
+          recommendations.push({
+            userId,
+            recommendationType: 'breathing',
+            title: '4-7-8 Breathing Exercise',
+            description: 'A calming breathing technique to reduce stress and anxiety',
+            instructions: 'Breathe in for 4 counts, hold for 7, exhale for 8. Repeat 4 times.',
+            durationMinutes: parseInt(wellnessPrefs?.availableTime || '15') >= 15 ? 10 : 5,
+            contextTrigger: 'stress',
+            priority: 'high',
+          });
+          break;
+          
+        case 'tired':
+        case 'exhausted':
+          recommendations.push({
+            userId,
+            recommendationType: 'exercise',
+            title: 'Gentle Stretching',
+            description: 'Light stretches to energize your body and mind',
+            instructions: 'Focus on neck, shoulders, and back. Hold each stretch for 30 seconds.',
+            durationMinutes: parseInt(wellnessPrefs?.availableTime || '15') >= 30 ? 15 : 10,
+            contextTrigger: 'fatigue',
+            priority: 'medium',
+          });
+          break;
+          
+        case 'sad':
+        case 'down':
+          recommendations.push({
+            userId,
+            recommendationType: 'social',
+            title: 'Connect with Loved Ones',
+            description: 'Reach out to someone who makes you feel better',
+            instructions: 'Call, text, or video chat with a friend or family member.',
+            durationMinutes: parseInt(wellnessPrefs?.availableTime || '15'),
+            contextTrigger: 'sadness',
+            priority: 'high',
+          });
+          break;
+          
+        default:
+          recommendations.push({
+            userId,
+            recommendationType: 'meditation',
+            title: 'Mindfulness Moment',
+            description: 'A short mindfulness exercise to center yourself',
+            instructions: 'Sit comfortably, focus on your breath, and observe your thoughts without judgment.',
+            durationMinutes: parseInt(wellnessPrefs?.availableTime || '15') >= 15 ? 10 : 5,
+            contextTrigger: 'general',
+            priority: 'medium',
+          });
+      }
+    }
+    
+    // Generate general wellness recommendations based on preferences
+    if (wellnessPrefs?.preferredActivities) {
+      const activities = wellnessPrefs.preferredActivities;
+      if (activities.includes('exercise')) {
+        recommendations.push({
+          userId,
+          recommendationType: 'exercise',
+          title: 'Quick Movement Break',
+          description: 'Get your body moving with simple exercises',
+          instructions: 'Do jumping jacks, push-ups, or walk around for a few minutes.',
+          durationMinutes: parseInt(wellnessPrefs?.availableTime || '15') >= 20 ? 15 : 10,
+          contextTrigger: 'general',
+          priority: 'medium',
+        });
+      }
+      
+      if (activities.includes('meditation')) {
+        recommendations.push({
+          userId,
+          recommendationType: 'meditation',
+          title: 'Guided Meditation',
+          description: 'A peaceful meditation session for inner calm',
+          instructions: 'Find a quiet space, close your eyes, and follow your breath.',
+          durationMinutes: parseInt(wellnessPrefs?.availableTime || '15') >= 20 ? 20 : 10,
+          contextTrigger: 'general',
+          priority: 'medium',
+        });
+      }
+    }
+    
+    // Create and return the recommendations
+    const createdRecommendations: SelfCareRecommendation[] = [];
+    for (const rec of recommendations) {
+      const created = await this.createSelfCareRecommendation(rec);
+      createdRecommendations.push(created);
+    }
+    
+    return createdRecommendations;
+  }
+
+  // Wellness preferences operations
+  async createWellnessPreferences(preferences: InsertWellnessPreferences): Promise<WellnessPreferences> {
+    const [newPreferences] = await db
+      .insert(wellnessPreferences)
+      .values(preferences)
+      .returning();
+    return newPreferences;
+  }
+
+  async getWellnessPreferencesByUserId(userId: string): Promise<WellnessPreferences | null> {
+    const [preferences] = await db
+      .select()
+      .from(wellnessPreferences)
+      .where(eq(wellnessPreferences.userId, userId))
+      .limit(1);
+    return preferences || null;
+  }
+
+  async updateWellnessPreferences(userId: string, updates: Partial<WellnessPreferences>): Promise<void> {
+    await db
+      .update(wellnessPreferences)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(wellnessPreferences.userId, userId));
   }
 }
 

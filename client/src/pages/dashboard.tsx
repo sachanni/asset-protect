@@ -256,6 +256,37 @@ export default function Dashboard() {
           
           {/* Mood Tracker */}
           <MoodTracker compact={true} />
+
+          {/* Self-Care Recommendations */}
+          <Card className="hover-lift border-0 shadow-lg bg-white/70 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg flex items-center justify-center">
+                  <Heart className="w-4 h-4 text-purple-600" />
+                </div>
+                <span>Self-Care Hub</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-600 mb-2">
+                    Get personalized wellness recommendations based on your mood and preferences
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Contextual suggestions for breathing, meditation, exercise, and more
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => setLocation("/self-care")}
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                >
+                  <Heart className="w-4 h-4 mr-2" />
+                  Explore
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Well-being Check Alert - Only show when needed */}
