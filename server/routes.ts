@@ -45,13 +45,12 @@ const loginSchema = z.object({
 const assetSchema = z.object({
   assetType: z.string(),
   title: z.string(),
-  description: z.string().optional(),
-  value: z.string().optional(),
-  currency: z.string().default('INR'),
-  contactMobile: z.string().optional(),
-  contactEmail: z.string().optional(),
-  storageLocation: z.string().default('local'),
-  encryptedData: z.string().optional(),
+  description: z.string(),
+  value: z.string(),
+  currency: z.string().default('USD'),
+  contactInfo: z.string(),
+  storageLocation: z.string(),
+  accessInstructions: z.string(),
 });
 
 const nomineeSchema = z.object({
@@ -338,36 +337,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId,
       });
       
-      res.json(asset);
+      res.json({ success: true, asset });
     } catch (error: any) {
       res.status(400).json({ message: "Failed to create asset", error: error.message });
-    }
-  });
-
-  // Nominee management
-  app.get('/api/nominees', combinedAuth, async (req: any, res) => {
-    try {
-      const userId = req.userId;
-      const nominees = await storage.getNominees(userId);
-      res.json(nominees);
-    } catch (error: any) {
-      res.status(500).json({ message: "Failed to fetch nominees", error: error.message });
-    }
-  });
-
-  app.post('/api/nominees', combinedAuth, async (req: any, res) => {
-    try {
-      const userId = req.userId;
-      const nomineeData = nomineeSchema.parse(req.body);
-      
-      const nominee = await storage.createNominee({
-        ...nomineeData,
-        userId,
-      });
-      
-      res.json(nominee);
-    } catch (error: any) {
-      res.status(400).json({ message: "Failed to create nominee", error: error.message });
     }
   });
 

@@ -64,12 +64,11 @@ export const assets = pgTable("assets", {
   assetType: varchar("asset_type").notNull(), // bank_account, real_estate, cryptocurrency, investment, loan
   title: varchar("title").notNull(),
   description: text("description"),
-  value: decimal("value", { precision: 15, scale: 2 }),
-  currency: varchar("currency").default('INR'),
-  contactMobile: varchar("contact_mobile"),
-  contactEmail: varchar("contact_email"),
+  value: varchar("value"), // Changed to varchar for consistency
+  currency: varchar("currency").default('USD'),
+  contactInfo: varchar("contact_info"), // Combined contact info
   storageLocation: varchar("storage_location").default('local'), // google_drive, digilocker, local
-  encryptedData: text("encrypted_data"), // JSON blob with asset details
+  accessInstructions: text("access_instructions"), // How to access the asset
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

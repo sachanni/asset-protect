@@ -271,25 +271,45 @@ export default function Dashboard() {
   }
 
   function renderAssets() {
+    const { data: assets = [] } = useQuery<any[]>({
+      queryKey: ["/api/assets"],
+      enabled: isAuthenticated,
+    });
+
     return (
       <div>
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Assets</h1>
           <p className="text-gray-600">Manage your digital assets</p>
         </div>
-        <div className="text-center py-12">
-          <p className="text-gray-500 mb-4">Asset management functionality coming soon</p>
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            Add New Asset
-          </Button>
-        </div>
+        
+        {assets.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500 mb-4">No assets added yet</p>
+            <Button onClick={() => setLocation("/add-asset")}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add New Asset
+            </Button>
+          </div>
+        ) : (
+          <div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
+              {assets.map((asset: any) => (
+                <AssetCard key={asset.id} asset={asset} />
+              ))}
+            </div>
+            <Button onClick={() => setLocation("/add-asset")}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Another Asset
+            </Button>
+          </div>
+        )}
       </div>
     );
   }
 
   function renderNominees() {
-    const { data: nominees = [] } = useQuery({
+    const { data: nominees = [] } = useQuery<any[]>({
       queryKey: ["/api/nominees"],
       enabled: isAuthenticated,
     });
