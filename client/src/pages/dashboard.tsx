@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
@@ -42,7 +42,9 @@ export default function Dashboard() {
   };
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState("dashboard");
 
+  // Redirect to home if not authenticated
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       toast({
@@ -60,12 +62,11 @@ export default function Dashboard() {
   const { data: stats, isLoading: statsLoading } = useQuery<DashboardStats>({
     queryKey: ["/api/dashboard/stats"],
     enabled: isAuthenticated,
-    retry: false,
   });
 
   const wellBeingMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("POST", "/api/wellbeing/confirm");
+      await apiRequest("POST", "/api/wellbeing/confirm", {});
     },
     onSuccess: () => {
       toast({
@@ -104,48 +105,24 @@ export default function Dashboard() {
 
   const showWellBeingAlert = stats && stats.wellBeingCounter > 10;
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-r from-primary-600 to-primary-500 rounded-lg flex items-center justify-center">
-                  <Shield className="w-4 h-4 text-white" />
-                </div>
-                <span className="text-xl font-bold text-gray-900">SecureVault</span>
-              </div>
-              <nav className="hidden md:flex space-x-8">
-                <a href="#" className="text-primary-500 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
-                <a href="#" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Assets</a>
-                <a href="#" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Nominees</a>
-                <a href="#" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Settings</a>
-              </nav>
-            </div>
-            <div className="flex items-center space-x-4">
-              {/* Well-being Status */}
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                Active
-              </Badge>
-              {/* Profile Menu */}
-              <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 cursor-pointer">
-                <Avatar className="w-8 h-8">
-                  <AvatarImage src={user?.profileImageUrl} className="object-cover" />
-                  <AvatarFallback>{user?.firstName?.[0]}{user?.lastName?.[0]}</AvatarFallback>
-                </Avatar>
-                <span className="text-sm font-medium text-gray-700">{user?.fullName || `${user?.firstName} ${user?.lastName}`}</span>
-                <ChevronDown className="w-4 h-4 text-gray-400" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+  function renderContent() {
+    switch (activeTab) {
+      case "dashboard":
+        return renderDashboard();
+      case "assets":
+        return renderAssets();
+      case "nominees":
+        return renderNominees();
+      case "settings":    
+        return renderSettings();
+      default:
+        return renderDashboard();
+    }
+  }
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  function renderDashboard() {
+    return (
+      <>
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -226,7 +203,12 @@ export default function Dashboard() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Recent Assets</CardTitle>
-                <Button variant="ghost" size="sm" className="text-primary-500 hover:text-primary-600">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-primary-500 hover:text-primary-600"
+                  onClick={() => setActiveTab("assets")}
+                >
                   View All
                 </Button>
               </div>
@@ -238,7 +220,11 @@ export default function Dashboard() {
                 )) || (
                   <p className="text-gray-500 text-center py-8">No assets added yet</p>
                 )}
-                <Button className="w-full" variant="outline">
+                <Button 
+                  className="w-full" 
+                  variant="outline"
+                  onClick={() => setActiveTab("assets")}
+                >
                   <Plus className="w-4 h-4 mr-2" />
                   Add New Asset
                 </Button>
@@ -250,7 +236,12 @@ export default function Dashboard() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Nominees</CardTitle>
-                <Button variant="ghost" size="sm" className="text-primary-500 hover:text-primary-600">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-primary-500 hover:text-primary-600"
+                  onClick={() => setActiveTab("nominees")}
+                >
                   Manage
                 </Button>
               </div>
@@ -262,7 +253,10 @@ export default function Dashboard() {
                 )) || (
                   <p className="text-gray-500 text-center py-8">No nominees added yet</p>
                 )}
-                <Button className="w-full bg-green-500 hover:bg-green-600">
+                <Button 
+                  className="w-full bg-green-500 hover:bg-green-600"
+                  onClick={() => setActiveTab("nominees")}
+                >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Nominee
                 </Button>
@@ -270,6 +264,170 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+      </>
+    );
+  }
+
+  function renderAssets() {
+    return (
+      <div>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Assets</h1>
+          <p className="text-gray-600">Manage your digital assets</p>
+        </div>
+        <div className="text-center py-12">
+          <p className="text-gray-500 mb-4">Asset management functionality coming soon</p>
+          <Button>
+            <Plus className="w-4 h-4 mr-2" />
+            Add New Asset
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  function renderNominees() {
+    return (
+      <div>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Nominees</h1>
+          <p className="text-gray-600">Manage your nominated family members</p>
+        </div>
+        <div className="text-center py-12">
+          <p className="text-gray-500 mb-4">Nominee management functionality coming soon</p>
+          <Button className="bg-green-500 hover:bg-green-600">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Nominee
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  function renderSettings() {
+    return (
+      <div>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Settings</h1>
+          <p className="text-gray-600">Configure your account and preferences</p>
+        </div>
+        <div className="grid gap-6 max-w-2xl">
+          <Card>
+            <CardHeader>
+              <CardTitle>Profile Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                  <p className="text-gray-900">{user?.fullName || `${user?.firstName} ${user?.lastName}`}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <p className="text-gray-900">{user?.email}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Well-being Settings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Check-in Frequency</label>
+                  <p className="text-gray-600">Configure how often you want to receive well-being check alerts</p>
+                </div>
+                <Button variant="outline">Configure Alerts</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-r from-primary-600 to-primary-500 rounded-lg flex items-center justify-center">
+                  <Shield className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-xl font-bold text-gray-900">SecureVault</span>
+              </div>
+              <nav className="hidden md:flex space-x-8">
+                <button 
+                  onClick={() => setActiveTab("dashboard")}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    activeTab === "dashboard" 
+                      ? "text-primary-500 hover:text-primary-600" 
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  Dashboard
+                </button>
+                <button 
+                  onClick={() => setActiveTab("assets")}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    activeTab === "assets" 
+                      ? "text-primary-500 hover:text-primary-600" 
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  Assets
+                </button>
+                <button 
+                  onClick={() => setActiveTab("nominees")}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    activeTab === "nominees" 
+                      ? "text-primary-500 hover:text-primary-600" 
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  Nominees
+                </button>
+                <button 
+                  onClick={() => setActiveTab("settings")}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    activeTab === "settings" 
+                      ? "text-primary-500 hover:text-primary-600" 
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  Settings
+                </button>
+              </nav>
+            </div>
+            <div className="flex items-center space-x-4">
+              {/* Well-being Status */}
+              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                Active
+              </Badge>
+              {/* Profile Menu */}
+              <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 cursor-pointer">
+                <Avatar className="w-8 h-8">
+                  <AvatarImage src={user?.profileImageUrl} className="object-cover" />
+                  <AvatarFallback>{user?.firstName?.[0]}{user?.lastName?.[0]}</AvatarFallback>
+                </Avatar>
+                <span className="text-sm font-medium text-gray-700">{user?.fullName || `${user?.firstName} ${user?.lastName}`}</span>
+                <ChevronDown className="w-4 h-4 text-gray-400" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {renderContent()}
       </main>
     </div>
   );
