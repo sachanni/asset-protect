@@ -449,14 +449,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/mood/entries', combinedAuth, async (req: any, res) => {
     try {
       const userId = req.userId;
+      console.log('Mood entry request:', { body: req.body, userId });
+      
       const moodData = insertMoodEntrySchema.parse({
         ...req.body,
         userId,
       });
       
+      console.log('Parsed mood data:', moodData);
       const mood = await storage.createMoodEntry(moodData);
       res.json({ success: true, mood });
     } catch (error: any) {
+      console.error('Mood entry error:', error);
       res.status(400).json({ message: "Failed to create mood entry", error: error.message });
     }
   });
