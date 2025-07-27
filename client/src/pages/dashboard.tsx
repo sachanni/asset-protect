@@ -289,14 +289,24 @@ export default function Dashboard() {
                 )) || (
                   <p className="text-gray-500 text-center py-8">No assets added yet</p>
                 )}
-                <Button 
-                  className="w-full" 
-                  variant="outline"
-                  onClick={() => setActiveTab("assets")}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add New Asset
-                </Button>
+                <div className="flex space-x-2">
+                  <Button 
+                    className="flex-1" 
+                    variant="outline"
+                    onClick={() => setLocation("/assets")}
+                  >
+                    <Coins className="w-4 h-4 mr-2" />
+                    View Portfolio
+                  </Button>
+                  <Button 
+                    className="flex-1" 
+                    variant="outline"
+                    onClick={() => setLocation("/add-asset")}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Asset
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

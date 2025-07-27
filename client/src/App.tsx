@@ -15,6 +15,7 @@ import AddNominee from "@/pages/add-nominee";
 import AddAsset from "@/pages/add-asset";
 import WellBeingSettings from "@/pages/well-being-settings";
 import MoodTrackingPage from "@/pages/mood-tracking";
+import AssetPortfolioPage from "@/pages/asset-portfolio";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -36,6 +37,7 @@ function Router() {
           <Route path="/add-asset" component={AddAsset} />
           <Route path="/well-being-settings" component={WellBeingSettings} />
           <Route path="/mood-tracking" component={MoodTrackingPage} />
+          <Route path="/assets" component={AssetPortfolioPage} />
         </>
       )}
       <Route component={NotFound} />
