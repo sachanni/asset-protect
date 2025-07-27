@@ -47,7 +47,14 @@ export default function RegistrationStep1() {
       const response = await apiRequest("POST", "/api/register/step1", data);
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      // Save step 1 data to session storage for step 2
+      sessionStorage.setItem('registrationStep1', JSON.stringify(variables));
+      
+      toast({
+        title: "Step 1 Complete!",
+        description: "Proceeding to account setup.",
+      });
       setLocation("/register/step2");
     },
     onError: (error: Error) => {

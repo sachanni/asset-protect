@@ -1,11 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Progress } from "@/components/ui/progress";
-import { Lock, Eye, EyeOff, Check, RotateCcw } from "lucide-react";
+import { Shield, Lock, Eye, EyeOff, Check, RotateCcw } from "lucide-react";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,6 +34,7 @@ export default function RegistrationStep2() {
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [captchaCode] = useState("7K9X2");
+  const [step1Data, setStep1Data] = useState<any>(null);
   
   const {
     register,
@@ -47,6 +47,18 @@ export default function RegistrationStep2() {
   });
 
   const password = watch("password");
+
+  // Get step 1 data from session storage
+  useEffect(() => {
+    const step1DataString = sessionStorage.getItem('registrationStep1');
+    if (step1DataString) {
+      const data = JSON.parse(step1DataString);
+      setStep1Data(data);
+    } else {
+      // Redirect back to step 1 if no data found
+      setLocation('/register/step1');
+    }
+  }, [setLocation]);
 
   const passwordRequirements = [
     { met: password?.length >= 8, text: "At least 8 characters" },
@@ -84,21 +96,44 @@ export default function RegistrationStep2() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-12">
       <div className="max-w-md mx-auto px-4">
-        {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-primary-500">Step 2 of 2</span>
-            <span className="text-sm text-gray-500">100% Complete</span>
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <Shield className="w-8 h-8 text-white" />
           </div>
-          <Progress value={100} className="h-2" />
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Complete Your Account</h1>
+          <p className="text-gray-600">Step 2 of 2: Security Setup</p>
         </div>
 
-        <Card className="shadow-lg">
+        {/* Progress Bar */}
+        <div className="mb-8 flex items-center justify-center space-x-4">
+          <div className="flex items-center">
+            <div className="w-4 h-4 bg-green-500 rounded-full"></div>
+            <div className="w-16 h-1 bg-green-500"></div>
+          </div>
+          <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
+        </div>
+
+        {/* Step 1 Information Display */}
+        {step1Data && (
+          <Card className="mb-6 bg-gray-50 border-gray-200">
+            <CardContent className="p-4">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">Step 1 Information:</h3>
+              <div className="space-y-2 text-sm text-gray-600">
+                <div><span className="font-medium">Name:</span> {step1Data.fullName}</div>
+                <div><span className="font-medium">Username:</span> {step1Data.fullName?.toLowerCase().replace(/\s+/g, '')}</div>
+                <div><span className="font-medium">Phone:</span> {step1Data.countryCode}{step1Data.mobileNumber}</div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <Card className="shadow-xl bg-white/80 backdrop-blur-sm border-0">
           <CardContent className="p-8">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gradient-to-r from-primary-600 to-primary-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <Lock className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-gray-900">Secure Your Account</h2>
