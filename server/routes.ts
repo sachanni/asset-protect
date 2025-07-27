@@ -446,6 +446,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Simple mood endpoint (used by frontend)
+  app.post('/api/mood', combinedAuth, async (req: any, res) => {
+    try {
+      const userId = req.userId;
+      console.log('Mood tracking request:', { body: req.body, userId });
+      
+      const moodData = insertMoodEntrySchema.parse({
+        ...req.body,
+        userId,
+      });
+      
+      console.log('Parsed mood data:', moodData);
+      const mood = await storage.createMoodEntry(moodData);
+      res.json({ success: true, mood });
+    } catch (error: any) {
+      console.error('Mood tracking error:', error);
+      res.status(400).json({ message: "Failed to create mood entry", error: error.message });
+    }
+  });
+
   app.post('/api/mood/entries', combinedAuth, async (req: any, res) => {
     try {
       const userId = req.userId;
