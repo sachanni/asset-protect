@@ -40,11 +40,12 @@ export function getSession() {
     secret: sessionSecret,
     store: sessionStore,
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true, // Allow saving uninitialized sessions for registration flow
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // Disable secure in development
       maxAge: sessionTtl,
+      sameSite: 'lax', // Allow cross-site requests
     },
   });
 }
