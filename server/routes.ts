@@ -626,12 +626,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.updateUserStatus(userId, accountStatus);
       
       // Log admin action
-      await storage.createAdminLog({
-        adminUserId: req.user?.id || '',
-        action: `user_${accountStatus}`,
-        targetUserId: userId,
-        details: reason || `User account ${accountStatus}`
-      });
+      if (req.user) {
+        await storage.createAdminLog({
+          adminUserId: req.user.id,
+          action: `user_${accountStatus}`,
+          targetUserId: userId,
+          details: reason || `User account ${accountStatus}`
+        });
+      }
 
       res.json({ success: true });
     } catch (error) {
@@ -704,12 +706,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       // Log admin action
-      await storage.createAdminLog({
-        adminUserId: req.user?.id || '',
-        action: 'alert_triggered',
-        targetUserId: userId,
-        details: message || 'Admin triggered well-being alert'
-      });
+      if (req.user) {
+        await storage.createAdminLog({
+          adminUserId: req.user.id,
+          action: 'alert_triggered',
+          targetUserId: userId,
+          details: message || 'Admin triggered well-being alert'
+        });
+      }
 
       res.json({ success: true });
     } catch (error) {
