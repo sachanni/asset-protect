@@ -44,9 +44,9 @@ export default function MoodTracker({ compact = false }: MoodTrackerProps) {
   const moodMutation = useMutation({
     mutationFn: async (data: { mood: string; emoji: string; notes?: string }) => {
       console.log('Sending mood data:', data);
-      const response = await apiRequest('/api/mood/entries', 'POST', data);
+      const response = await apiRequest('POST', '/api/mood/entries', data);
       console.log('Mood response:', response);
-      return response;
+      return await response.json();
     },
     onSuccess: (data) => {
       console.log('Mood mutation success:', data);
