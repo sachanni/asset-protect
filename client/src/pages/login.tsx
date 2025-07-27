@@ -28,6 +28,7 @@ export default function Login() {
   const [loginMethod, setLoginMethod] = useState<"otp" | "password">("otp");
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [otpValue, setOtpValue] = useState("");
+  const [displayedOtp, setDisplayedOtp] = useState("");
   
   const {
     register,
@@ -45,8 +46,12 @@ export default function Login() {
       const response = await apiRequest("POST", "/api/send-otp", { identifier });
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       setShowOtpInput(true);
+      // Display OTP from server response (temporary for testing)
+      if (data.otp) {
+        setDisplayedOtp(data.otp);
+      }
       toast({
         title: "OTP Sent",
         description: "Please check your mobile and email for the OTP code.",
@@ -145,6 +150,16 @@ export default function Login() {
                     </Button>
                   ) : (
                     <div className="space-y-4">
+                      {displayedOtp && (
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+                          <p className="text-sm text-yellow-800 font-medium">
+                            🔒 Testing Mode - Your OTP: <span className="font-mono text-lg">{displayedOtp}</span>
+                          </p>
+                          <p className="text-xs text-yellow-600 mt-1">
+                            (This will be removed in production)
+                          </p>
+                        </div>
+                      )}
                       <div>
                         <Label>Enter OTP</Label>
                         <div className="flex justify-center mt-2">

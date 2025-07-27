@@ -204,7 +204,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // TODO: Send OTP via SMS/Email service
       console.log(`OTP for ${identifier}: ${otp}`);
       
-      res.json({ success: true, message: "OTP sent successfully" });
+      // Temporarily include OTP in response for testing (remove in production)
+      res.json({ success: true, message: "OTP sent successfully", otp: otp });
     } catch (error: any) {
       res.status(500).json({ message: "Failed to send OTP", error: error.message });
     }
