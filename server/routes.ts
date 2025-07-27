@@ -2,7 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertUserSchema } from "@shared/schema";
+import { insertUserSchema, insertNomineeSchema } from "@shared/schema";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 
@@ -287,6 +287,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error: any) {
       res.status(500).json({ message: "Failed to fetch dashboard data", error: error.message });
+    }
+  });
+
+  // Nominee management
+  app.get('/api/nominees', combinedAuth, async (req: any, res) => {
+    try {
+      const userId = req.userId;
+      const nominees = await storage.getNominees(userId);
+      res.json(nominees);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch nominees", error: error.message });
+    }
+  });
+
+  app.post('/api/nominees', combinedAuth, async (req: any, res) => {
+    try {
+      const userId = req.userId;
+      const validatedData = insertNomineeSchema.parse({
+        ...req.body,
+        userId
+      });
+
+      const nominee = await storage.createNominee(validatedData);
+      res.json({ success: true, nominee });
+    } catch (error: any) {
+      console.error("Error creating nominee:", error);
+      res.status(400).json({ message: "Failed to create nominee", error: error.message });
     }
   });
 

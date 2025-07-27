@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import type { User } from "@shared/schema";
@@ -35,6 +36,7 @@ interface DashboardStats {
 }
 
 export default function Dashboard() {
+  const [, setLocation] = useLocation();
   const { user, isAuthenticated, isLoading } = useAuth() as { 
     user: User | undefined, 
     isAuthenticated: boolean, 
@@ -294,8 +296,11 @@ export default function Dashboard() {
           <p className="text-gray-600">Manage your nominated family members</p>
         </div>
         <div className="text-center py-12">
-          <p className="text-gray-500 mb-4">Nominee management functionality coming soon</p>
-          <Button className="bg-green-500 hover:bg-green-600">
+          <p className="text-gray-500 mb-4">No nominees added yet</p>
+          <Button 
+            className="bg-green-500 hover:bg-green-600"
+            onClick={() => setLocation("/add-nominee")}
+          >
             <Plus className="w-4 h-4 mr-2" />
             Add Nominee
           </Button>
@@ -415,7 +420,7 @@ export default function Dashboard() {
               <div className="flex items-center space-x-3">
                 <div className="flex items-center space-x-2">
                   <Avatar className="w-8 h-8">
-                    <AvatarImage src={user?.profileImageUrl} className="object-cover" />
+                    <AvatarImage src={user?.profileImageUrl || undefined} className="object-cover" />
                     <AvatarFallback>{user?.firstName?.[0]}{user?.lastName?.[0]}</AvatarFallback>
                   </Avatar>
                   <span className="text-sm font-medium text-gray-700">{user?.fullName || `${user?.firstName} ${user?.lastName}`}</span>

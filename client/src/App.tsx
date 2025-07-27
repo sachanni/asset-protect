@@ -11,6 +11,7 @@ import RegistrationStep2 from "@/pages/registration-step2";
 import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import AdminDashboard from "@/pages/admin-dashboard";
+import AddNominee from "@/pages/add-nominee";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -28,6 +29,7 @@ function Router() {
         <>
           <Route path="/" component={Dashboard} />
           <Route path="/admin" component={AdminDashboard} />
+          <Route path="/add-nominee" component={AddNominee} />
         </>
       )}
       <Route component={NotFound} />
