@@ -43,9 +43,13 @@ export default function MoodTracker({ compact = false }: MoodTrackerProps) {
   // Create mood entry mutation
   const moodMutation = useMutation({
     mutationFn: async (data: { mood: string; emoji: string; notes?: string }) => {
-      return await apiRequest('/api/mood/entries', 'POST', data);
+      console.log('Sending mood data:', data);
+      const response = await apiRequest('/api/mood/entries', 'POST', data);
+      console.log('Mood response:', response);
+      return response;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Mood mutation success:', data);
       toast({
         title: "Mood recorded!",
         description: "Your mood has been successfully tracked.",
@@ -56,9 +60,10 @@ export default function MoodTracker({ compact = false }: MoodTrackerProps) {
       queryClient.invalidateQueries({ queryKey: ['/api/mood/latest'] });
     },
     onError: (error: any) => {
+      console.error('Mood mutation error:', error);
       toast({
         title: "Error",
-        description: "Failed to record mood. Please try again.",
+        description: error?.message || "Failed to record mood. Please try again.",
         variant: "destructive",
       });
     },
