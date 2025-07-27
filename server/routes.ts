@@ -533,6 +533,183 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin routes - middleware to check if user is admin
+  const isAdmin = async (req: any, res: any, next: any) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      // Get fresh user data to check admin status
+      const user = await storage.getUserById(req.user.id);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      next();
+    } catch (error) {
+      return res.status(500).json({ message: "Server error checking admin status" });
+    }
+  };
+
+  // Admin dashboard stats
+  app.get("/api/admin/stats", combinedAuth, isAdmin, async (req, res) => {
+    try {
+      const totalUsers = await storage.getAllUsers();
+      const activeUsers = totalUsers.filter(u => u.accountStatus === 'active');
+      const suspendedUsers = totalUsers.filter(u => u.accountStatus === 'suspended');
+      const totalAssets = await storage.getAllAssets();
+      const totalNominees = await storage.getAllNominees();
+      
+      // Users with high well-being counters (alerts)
+      const usersAtRisk = totalUsers.filter(u => (u.wellBeingCounter || 0) >= 10);
+      
+      // Recent admin actions
+      const recentActions = await storage.getRecentAdminLogs(10);
+      
+      res.json({
+        totalUsers: totalUsers.length,
+        activeUsers: activeUsers.length,
+        suspendedUsers: suspendedUsers.length,
+        deactivatedUsers: totalUsers.filter(u => u.accountStatus === 'deactivated').length,
+        totalAssets: totalAssets.length,
+        totalNominees: totalNominees.length,
+        usersAtRisk: usersAtRisk.length,
+        recentActions
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch admin stats" });
+    }
+  });
+
+  // Get all users for admin panel
+  app.get("/api/admin/users", combinedAuth, isAdmin, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      // Remove sensitive information
+      const safeUsers = users.map(u => ({
+        id: u.id,
+        email: u.email,
+        fullName: u.fullName,
+        accountStatus: u.accountStatus,
+        wellBeingCounter: u.wellBeingCounter,
+        maxWellBeingLimit: u.maxWellBeingLimit,
+        lastWellBeingCheck: u.lastWellBeingCheck,
+        lastLoginAt: u.lastLoginAt,
+        alertFrequency: u.alertFrequency,
+        createdAt: u.createdAt,
+        isActive: u.isActive
+      }));
+      res.json(safeUsers);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  // Update user account status
+  app.patch("/api/admin/users/:userId/status", combinedAuth, isAdmin, async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { accountStatus, reason } = req.body;
+      
+      if (!['active', 'suspended', 'deactivated'].includes(accountStatus)) {
+        return res.status(400).json({ error: "Invalid account status" });
+      }
+
+      await storage.updateUserStatus(userId, accountStatus);
+      
+      // Log admin action
+      await storage.createAdminLog({
+        adminUserId: req.user?.id || '',
+        action: `user_${accountStatus}`,
+        targetUserId: userId,
+        details: reason || `User account ${accountStatus}`
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update user status" });
+    }
+  });
+
+  // Get user details for admin
+  app.get("/api/admin/users/:userId", combinedAuth, isAdmin, async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const user = await storage.getUserById(userId);
+      const userAssets = await storage.getAssetsByUserId(userId);
+      const userNominees = await storage.getNomineesByUserId(userId);
+      const moodEntries = await storage.getMoodEntriesByUserId(userId);
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Return user details without sensitive asset information
+      res.json({
+        user: {
+          id: user.id,
+          email: user.email,
+          fullName: user.fullName,
+          accountStatus: user.accountStatus,
+          wellBeingCounter: user.wellBeingCounter,
+          maxWellBeingLimit: user.maxWellBeingLimit,
+          lastWellBeingCheck: user.lastWellBeingCheck,
+          alertFrequency: user.alertFrequency,
+          createdAt: user.createdAt
+        },
+        assetCount: userAssets.length,
+        nomineeCount: userNominees.length,
+        moodEntryCount: moodEntries.length,
+        nominees: userNominees.map((n: any) => ({
+          id: n.id,
+          fullName: n.fullName,
+          relationship: n.relationship,
+          isVerified: n.isVerified
+        }))
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch user details" });
+    }
+  });
+
+  // Get admin logs
+  app.get("/api/admin/logs", combinedAuth, isAdmin, async (req, res) => {
+    try {
+      const logs = await storage.getRecentAdminLogs(50);
+      res.json(logs);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch admin logs" });
+    }
+  });
+
+  // Trigger well-being alert for user (admin action)
+  app.post("/api/admin/users/:userId/alert", combinedAuth, isAdmin, async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { message } = req.body;
+      
+      // Create well-being alert
+      await storage.createWellBeingAlert({
+        userId,
+        alertType: 'admin_escalation',
+        status: 'pending'
+      });
+      
+      // Log admin action
+      await storage.createAdminLog({
+        adminUserId: req.user?.id || '',
+        action: 'alert_triggered',
+        targetUserId: userId,
+        details: message || 'Admin triggered well-being alert'
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to trigger alert" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -49,6 +49,9 @@ export const users = pgTable("users", {
   enableSMS: boolean("enable_sms").default(true),
   enableEmail: boolean("enable_email").default(true),
   escalationEnabled: boolean("escalation_enabled").default(true),
+  isAdmin: boolean("is_admin").default(false),
+  accountStatus: varchar("account_status").default('active'), // active, suspended, deactivated
+  lastLoginAt: timestamp("last_login_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -163,3 +166,20 @@ export type AdminAction = typeof adminActions.$inferSelect;
 export type InsertAdminAction = z.infer<typeof insertAdminActionSchema>;
 export type MoodEntry = typeof moodEntries.$inferSelect;
 export type InsertMoodEntry = z.infer<typeof insertMoodEntrySchema>;
+
+// Admin activity logs
+export const adminLogs = pgTable("admin_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  adminUserId: varchar("admin_user_id").notNull().references(() => users.id),
+  action: varchar("action").notNull(), // user_suspended, user_activated, alert_triggered, etc.
+  targetUserId: varchar("target_user_id").references(() => users.id),
+  details: text("details"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertAdminLogSchema = createInsertSchema(adminLogs).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertAdminLog = z.infer<typeof insertAdminLogSchema>;
+export type AdminLog = typeof adminLogs.$inferSelect;

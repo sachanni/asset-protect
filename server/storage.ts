@@ -331,6 +331,49 @@ export class DatabaseStorage implements IStorage {
       .limit(1);
     return mood;
   }
+
+  // Additional admin methods
+  async getAllAssets(): Promise<Asset[]> {
+    return await db.select().from(assets);
+  }
+
+  async getAllNominees(): Promise<Nominee[]> {
+    return await db.select().from(nominees);
+  }
+
+  async updateUserStatus(userId: string, accountStatus: string): Promise<void> {
+    await db.update(users)
+      .set({ accountStatus, updatedAt: new Date() })
+      .where(eq(users.id, userId));
+  }
+
+  async getUserById(userId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+    return user;
+  }
+
+  async getAssetsByUserId(userId: string): Promise<Asset[]> {
+    return await db.select().from(assets).where(eq(assets.userId, userId));
+  }
+
+  async getNomineesByUserId(userId: string): Promise<Nominee[]> {
+    return await db.select().from(nominees).where(eq(nominees.userId, userId));
+  }
+
+  async getMoodEntriesByUserId(userId: string): Promise<MoodEntry[]> {
+    return await db.select().from(moodEntries).where(eq(moodEntries.userId, userId));
+  }
+
+  async createAdminLog(data: any): Promise<AdminLog> {
+    const [log] = await db.insert(adminLogs).values(data).returning();
+    return log;
+  }
+
+  async getRecentAdminLogs(limit: number = 50): Promise<AdminLog[]> {
+    return await db.select().from(adminLogs)
+      .orderBy(desc(adminLogs.createdAt))
+      .limit(limit);
+  }
 }
 
 export const storage = new DatabaseStorage();
