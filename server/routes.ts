@@ -109,6 +109,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Debug endpoint for session testing
+  app.get('/api/debug/session', (req, res) => {
+    res.json({
+      sessionID: req.sessionID,
+      session: req.session,
+      cookies: req.headers.cookie,
+    });
+  });
+
   // Registration endpoints
   app.post('/api/register/step1', async (req, res) => {
     try {
@@ -122,7 +131,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Store step 1 data in session
       req.session.registrationStep1 = validatedData;
-      res.json({ success: true, message: "Step 1 completed" });
+      
+      // Save session explicitly to ensure it's stored
+      req.session.save((err) => {
+        if (err) {
+          console.error('Session save error:', err);
+          return res.status(500).json({ message: "Session error" });
+        }
+        res.json({ success: true, message: "Step 1 completed" });
+      });
     } catch (error: any) {
       res.status(400).json({ message: "Invalid data", error: error.message });
     }
@@ -130,8 +147,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/register/step2', async (req, res) => {
     try {
+      console.log('Session ID:', req.sessionID);
+      console.log('Session data:', req.session);
+      
       const step1Data = req.session.registrationStep1;
       if (!step1Data) {
+        console.log('No step1 data found in session');
         return res.status(400).json({ message: "Please complete step 1 first" });
       }
 

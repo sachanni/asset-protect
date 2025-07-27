@@ -46,6 +46,7 @@ export function getSession() {
       secure: false, // Disable secure in development
       maxAge: sessionTtl,
       sameSite: 'lax', // Allow cross-site requests
+      path: '/', // Ensure cookie is available for all paths
     },
   });
 }
