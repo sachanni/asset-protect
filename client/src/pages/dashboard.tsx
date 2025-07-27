@@ -66,6 +66,17 @@ export default function Dashboard() {
     enabled: isAuthenticated,
   });
 
+  // Add all required queries at top level
+  const { data: assetsData = [] } = useQuery<any[]>({
+    queryKey: ["/api/assets"],
+    enabled: isAuthenticated,
+  });
+
+  const { data: nomineesData = [] } = useQuery<any[]>({
+    queryKey: ["/api/nominees"],
+    enabled: isAuthenticated,
+  });
+
   const wellBeingMutation = useMutation({
     mutationFn: async () => {
       await apiRequest("POST", "/api/wellbeing/confirm", {});
@@ -270,12 +281,9 @@ export default function Dashboard() {
     );
   }
 
-  function renderAssets() {
-    const { data: assets = [] } = useQuery<any[]>({
-      queryKey: ["/api/assets"],
-      enabled: isAuthenticated,
-    });
 
+
+  function renderAssets() {
     return (
       <div>
         <div className="mb-8">
@@ -283,7 +291,7 @@ export default function Dashboard() {
           <p className="text-gray-600">Manage your digital assets</p>
         </div>
         
-        {assets.length === 0 ? (
+        {assetsData.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500 mb-4">No assets added yet</p>
             <Button onClick={() => setLocation("/add-asset")}>
@@ -294,7 +302,7 @@ export default function Dashboard() {
         ) : (
           <div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
-              {assets.map((asset: any) => (
+              {assetsData.map((asset: any) => (
                 <AssetCard key={asset.id} asset={asset} />
               ))}
             </div>
@@ -309,11 +317,6 @@ export default function Dashboard() {
   }
 
   function renderNominees() {
-    const { data: nominees = [] } = useQuery<any[]>({
-      queryKey: ["/api/nominees"],
-      enabled: isAuthenticated,
-    });
-
     return (
       <div>
         <div className="mb-8">
@@ -321,7 +324,7 @@ export default function Dashboard() {
           <p className="text-gray-600">Manage your nominated family members</p>
         </div>
         
-        {nominees.length === 0 ? (
+        {nomineesData.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500 mb-4">No nominees added yet</p>
             <Button 
@@ -335,7 +338,7 @@ export default function Dashboard() {
         ) : (
           <div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
-              {nominees.map((nominee: any) => (
+              {nomineesData.map((nominee: any) => (
                 <NomineeCard key={nominee.id} nominee={nominee} />
               ))}
             </div>
