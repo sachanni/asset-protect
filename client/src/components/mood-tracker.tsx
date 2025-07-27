@@ -1,27 +1,35 @@
 import { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import { Heart, Smile, Calendar, TrendingUp } from 'lucide-react';
 
 interface MoodOption {
-  mood: string;
+  id: string;
   emoji: string;
   label: string;
   color: string;
+  bgColor: string;
 }
 
 const moodOptions: MoodOption[] = [
-  { mood: 'happy', emoji: '😊', label: 'Happy', color: 'mood-happy hover:scale-105 border-yellow-300' },
-  { mood: 'excited', emoji: '🤩', label: 'Excited', color: 'mood-excited hover:scale-105 border-orange-300' },
-  { mood: 'calm', emoji: '😌', label: 'Calm', color: 'mood-calm hover:scale-105 border-blue-300' },
-  { mood: 'content', emoji: '😐', label: 'Content', color: 'mood-content hover:scale-105 border-purple-300' },
-  { mood: 'tired', emoji: '😴', label: 'Tired', color: 'mood-tired hover:scale-105 border-red-300' },
-  { mood: 'stressed', emoji: '😰', label: 'Stressed', color: 'mood-stressed hover:scale-105 border-pink-300' },
-  { mood: 'sad', emoji: '😢', label: 'Sad', color: 'mood-sad hover:scale-105 border-teal-300' },
-  { mood: 'anxious', emoji: '😟', label: 'Anxious', color: 'mood-anxious hover:scale-105 border-orange-300' },
+  { id: 'amazing', emoji: '🤩', label: 'Amazing', color: 'text-purple-700', bgColor: 'bg-purple-100 hover:bg-purple-200' },
+  { id: 'happy', emoji: '😊', label: 'Happy', color: 'text-green-700', bgColor: 'bg-green-100 hover:bg-green-200' },
+  { id: 'good', emoji: '🙂', label: 'Good', color: 'text-blue-700', bgColor: 'bg-blue-100 hover:bg-blue-200' },
+  { id: 'okay', emoji: '😐', label: 'Okay', color: 'text-gray-700', bgColor: 'bg-gray-100 hover:bg-gray-200' },
+  { id: 'sad', emoji: '😢', label: 'Sad', color: 'text-indigo-700', bgColor: 'bg-indigo-100 hover:bg-indigo-200' },
+  { id: 'anxious', emoji: '😰', label: 'Anxious', color: 'text-orange-700', bgColor: 'bg-orange-100 hover:bg-orange-200' },
+  { id: 'stressed', emoji: '😤', label: 'Stressed', color: 'text-red-700', bgColor: 'bg-red-100 hover:bg-red-200' },
+  { id: 'tired', emoji: '😴', label: 'Tired', color: 'text-slate-700', bgColor: 'bg-slate-100 hover:bg-slate-200' },
+  { id: 'excited', emoji: '🎉', label: 'Excited', color: 'text-pink-700', bgColor: 'bg-pink-100 hover:bg-pink-200' },
+  { id: 'calm', emoji: '😌', label: 'Calm', color: 'text-teal-700', bgColor: 'bg-teal-100 hover:bg-teal-200' },
+  { id: 'grateful', emoji: '🙏', label: 'Grateful', color: 'text-amber-700', bgColor: 'bg-amber-100 hover:bg-amber-200' },
+  { id: 'confused', emoji: '😕', label: 'Confused', color: 'text-cyan-700', bgColor: 'bg-cyan-100 hover:bg-cyan-200' },
 ];
 
 interface MoodTrackerProps {
@@ -31,106 +39,79 @@ interface MoodTrackerProps {
 export default function MoodTracker({ compact = false }: MoodTrackerProps) {
   const [selectedMood, setSelectedMood] = useState<MoodOption | null>(null);
   const [notes, setNotes] = useState('');
+  const [isExpanded, setIsExpanded] = useState(!compact);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch latest mood entry
-  const { data: latestMood } = useQuery({
-    queryKey: ['/api/mood/latest'],
-    enabled: compact, // Only fetch for compact view
-  }) as { data: { emoji?: string; mood?: string } | undefined };
-
-  // Create mood entry mutation
-  const moodMutation = useMutation({
+  const saveMoodMutation = useMutation({
     mutationFn: async (data: { mood: string; emoji: string; notes?: string }) => {
-      console.log('Sending mood data:', data);
-      const response = await apiRequest('POST', '/api/mood/entries', data);
-      console.log('Mood response:', response);
-      return await response.json();
+      const response = await apiRequest('POST', '/api/mood', data);
+      return response.json();
     },
-    onSuccess: (data) => {
-      console.log('Mood mutation success:', data);
+    onSuccess: () => {
       toast({
-        title: "Mood recorded!",
-        description: "Your mood has been successfully tracked.",
+        title: 'Mood tracked successfully!',
+        description: 'Your emotional wellness data has been recorded.',
       });
+      queryClient.invalidateQueries({ queryKey: ['/api/mood'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/mood/latest'] });
       setSelectedMood(null);
       setNotes('');
-      queryClient.invalidateQueries({ queryKey: ['/api/mood/entries'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/mood/latest'] });
+      if (compact) setIsExpanded(false);
     },
-    onError: (error: any) => {
-      console.error('Mood mutation error:', error);
+    onError: () => {
       toast({
-        title: "Error",
-        description: error?.message || "Failed to record mood. Please try again.",
-        variant: "destructive",
+        title: 'Failed to track mood',
+        description: 'Please try again later.',
+        variant: 'destructive',
       });
     },
   });
 
-  const handleMoodSubmit = () => {
+  const handleMoodSelect = (mood: MoodOption) => {
+    setSelectedMood(mood);
+    if (compact && !notes) {
+      // Quick save for compact mode without notes
+      saveMoodMutation.mutate({
+        mood: mood.label,
+        emoji: mood.emoji,
+      });
+    }
+  };
+
+  const handleSave = () => {
     if (!selectedMood) return;
     
-    moodMutation.mutate({
-      mood: selectedMood.mood,
+    saveMoodMutation.mutate({
+      mood: selectedMood.label,
       emoji: selectedMood.emoji,
       notes: notes.trim() || undefined,
     });
   };
 
-  if (compact) {
+  if (compact && !isExpanded) {
     return (
-      <Card className="hover-lift border-0 shadow-lg bg-gradient-mood">
-        <CardContent className="p-6">
+      <Card className="hover-lift border-0 shadow-lg bg-white/70 backdrop-blur-sm">
+        <CardContent className="p-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-white/80 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
-                <span className="text-2xl">{latestMood?.emoji || '😊'}</span>
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full flex items-center justify-center">
+                <Heart className="w-5 h-5 text-white" />
               </div>
-              <div className="ml-4">
-                <h3 className="text-lg font-bold text-gray-800">Current Mood</h3>
-                <p className="text-sm text-gray-600 capitalize font-medium">
-                  {latestMood?.mood || 'Not set today'}
-                </p>
+              <div>
+                <h3 className="font-semibold text-gray-900">Quick Mood Check</h3>
+                <p className="text-sm text-gray-500">How are you feeling?</p>
               </div>
             </div>
-            <div className="flex flex-col space-y-2">
-              <div className="flex space-x-2">
-                {moodOptions.slice(0, 4).map((mood) => (
-                  <Button
-                    key={mood.mood}
-                    variant="outline"
-                    size="sm"
-                    className={`w-10 h-10 p-0 border-2 bg-white/70 backdrop-blur-sm transition-all duration-200 hover:scale-110 ${
-                      selectedMood?.mood === mood.mood 
-                        ? `${mood.color} border-white shadow-lg` 
-                        : 'hover:bg-white/90 border-gray-200'
-                    }`}
-                    onClick={() => {
-                      setSelectedMood(mood);
-                      moodMutation.mutate({
-                        mood: mood.mood,
-                        emoji: mood.emoji,
-                      });
-                    }}
-                    disabled={moodMutation.isPending}
-                  >
-                    <span className="text-lg">{mood.emoji}</span>
-                  </Button>
-                ))}
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-xs text-gray-600 hover:text-gray-800 h-6 transition-colors duration-200"
-                onClick={() => {
-                  window.location.href = '/mood-tracking';
-                }}
-              >
-                View All Moods →
-              </Button>
-            </div>
+            <Button
+              onClick={() => setIsExpanded(true)}
+              variant="outline"
+              size="sm"
+              className="bg-gradient-to-r from-pink-50 to-purple-50 border-pink-200 hover:from-pink-100 hover:to-purple-100"
+            >
+              <Smile className="w-4 h-4 mr-2" />
+              Track Mood
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -138,84 +119,138 @@ export default function MoodTracker({ compact = false }: MoodTrackerProps) {
   }
 
   return (
-    <Card className="hover-lift border-0 shadow-lg bg-gradient-mood">
-      <CardHeader className="text-center">
-        <CardTitle className="flex items-center justify-center text-xl font-bold text-gray-800">
-          <span className="text-2xl mr-3">😊</span>
-          How are you feeling today?
+    <Card className="hover-lift border-0 shadow-lg bg-white/70 backdrop-blur-sm">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center space-x-2">
+          <div className="w-8 h-8 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full flex items-center justify-center">
+            <Heart className="w-4 h-4 text-white" />
+          </div>
+          <span>Mood Tracker</span>
+          {compact && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsExpanded(false)}
+              className="ml-auto"
+            >
+              ×
+            </Button>
+          )}
         </CardTitle>
+        <p className="text-sm text-gray-600">Select how you're feeling right now</p>
       </CardHeader>
+      
       <CardContent className="space-y-6">
         {/* Mood Selection Grid */}
-        <div className="grid grid-cols-4 gap-3">
-          {moodOptions.map((mood) => (
-            <Button
-              key={mood.mood}
-              variant="outline"
-              className={`h-20 flex flex-col items-center justify-center border-2 bg-white/70 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-lg ${
-                selectedMood?.mood === mood.mood 
-                  ? `${mood.color} border-white shadow-xl scale-105` 
-                  : 'hover:bg-white/90 border-gray-200'
-              }`}
-              onClick={() => setSelectedMood(mood)}
-            >
-              <span className="text-3xl mb-1">{mood.emoji}</span>
-              <span className="text-xs font-semibold text-gray-700">{mood.label}</span>
-            </Button>
-          ))}
+        <div>
+          <Label className="text-sm font-medium text-gray-700 mb-3 block">
+            How are you feeling?
+          </Label>
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+            {moodOptions.map((mood) => (
+              <button
+                key={mood.id}
+                onClick={() => handleMoodSelect(mood)}
+                className={`
+                  p-3 rounded-xl border-2 transition-all duration-200 
+                  ${selectedMood?.id === mood.id 
+                    ? 'border-purple-400 bg-purple-50 scale-105 shadow-md' 
+                    : 'border-gray-200 hover:border-gray-300'
+                  }
+                  ${mood.bgColor}
+                `}
+              >
+                <div className="text-center">
+                  <div className="text-2xl mb-1">{mood.emoji}</div>
+                  <div className={`text-xs font-medium ${mood.color}`}>
+                    {mood.label}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Notes Section */}
+        {/* Selected Mood Display */}
         {selectedMood && (
-          <div className="space-y-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                How are you feeling? (Optional)
-              </label>
-              <Textarea
-                placeholder="Tell us more about your mood today..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                rows={3}
-                className="resize-none"
-              />
-            </div>
-            
-            <div className="flex space-x-3">
-              <Button
-                onClick={handleMoodSubmit}
-                disabled={moodMutation.isPending}
-                className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg transition-all duration-200 hover:scale-105"
-              >
-                {moodMutation.isPending ? "Recording..." : "Record Mood"}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSelectedMood(null);
-                  setNotes('');
-                }}
-                disabled={moodMutation.isPending}
-                className="border-gray-300 hover:bg-gray-50 transition-colors duration-200"
-              >
-                Cancel
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Selected Mood Preview */}
-        {selectedMood && (
-          <div className="bg-gray-50 rounded-lg p-3 border">
-            <div className="flex items-center">
-              <span className="text-2xl mr-3">{selectedMood.emoji}</span>
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-200">
+            <div className="flex items-center space-x-3">
+              <div className="text-3xl">{selectedMood.emoji}</div>
               <div>
-                <p className="font-medium text-gray-900">Feeling {selectedMood.label}</p>
-                <p className="text-sm text-gray-600">Ready to record this mood?</p>
+                <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200">
+                  Feeling {selectedMood.label}
+                </Badge>
+                <p className="text-sm text-gray-600 mt-1">
+                  Great! Your mood has been selected.
+                </p>
               </div>
             </div>
           </div>
         )}
+
+        {/* Notes Section */}
+        <div>
+          <Label htmlFor="mood-notes" className="text-sm font-medium text-gray-700 mb-2 block">
+            Additional Notes (Optional)
+          </Label>
+          <Textarea
+            id="mood-notes"
+            placeholder="What's on your mind? Share any thoughts about your current mood..."
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            className="min-h-[80px] resize-none border-gray-200 focus:border-purple-400 focus:ring-purple-400"
+          />
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex space-x-3">
+          <Button
+            onClick={handleSave}
+            disabled={!selectedMood || saveMoodMutation.isPending}
+            className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg"
+          >
+            {saveMoodMutation.isPending ? (
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Saving...</span>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Calendar className="w-4 h-4" />
+                <span>Save Mood</span>
+              </div>
+            )}
+          </Button>
+          
+          {selectedMood && (
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSelectedMood(null);
+                setNotes('');
+              }}
+              className="border-gray-300 hover:border-gray-400"
+            >
+              Clear
+            </Button>
+          )}
+        </div>
+
+        {/* Quick Stats */}
+        <div className="bg-gray-50 rounded-xl p-4 border">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <TrendingUp className="w-4 h-4 text-gray-500" />
+              <span className="text-sm text-gray-600">Wellness Tracking</span>
+            </div>
+            <Badge variant="outline" className="text-xs">
+              Daily Check-in
+            </Badge>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            Regular mood tracking helps understand your emotional patterns and supports overall well-being.
+          </p>
+        </div>
       </CardContent>
     </Card>
   );

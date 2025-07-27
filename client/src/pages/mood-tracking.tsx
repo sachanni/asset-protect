@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import MoodTracker from '@/components/mood-tracker';
 import MoodTrends from '@/components/mood-trends';
+import { Calendar, TrendingUp, Heart, BarChart3, ArrowLeft } from 'lucide-react';
 import { useLocation } from 'wouter';
-import { ArrowLeft, TrendingUp, Calendar, BarChart3 } from 'lucide-react';
 
 interface MoodEntry {
   id: string;
@@ -18,180 +18,180 @@ interface MoodEntry {
 export default function MoodTrackingPage() {
   const [, setLocation] = useLocation();
 
-  // Fetch recent mood entries
-  const { data: moodEntries = [], isLoading } = useQuery({
-    queryKey: ['/api/mood/entries'],
-  }) as { data: MoodEntry[]; isLoading: boolean };
+  const { data: moodEntries = [], isLoading } = useQuery<MoodEntry[]>({
+    queryKey: ['/api/mood'],
+  });
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  const { data: latestMood } = useQuery<MoodEntry>({
+    queryKey: ['/api/mood/latest'],
+  });
 
-  const getMoodStats = () => {
-    const last7Days = moodEntries.slice(0, 7);
-    const moodCounts = last7Days.reduce((acc, entry) => {
-      acc[entry.mood] = (acc[entry.mood] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-    
-    const mostCommon = Object.entries(moodCounts)
-      .sort(([,a], [,b]) => b - a)[0];
-    
-    return {
-      totalEntries: last7Days.length,
-      mostCommonMood: mostCommon ? mostCommon[0] : 'No data',
-      streak: calculateStreak(),
-    };
-  };
+  const todaysMoods = moodEntries.filter(entry => 
+    new Date(entry.createdAt).toDateString() === new Date().toDateString()
+  );
 
-  const calculateStreak = () => {
-    let streak = 0;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    for (let i = 0; i < moodEntries.length; i++) {
-      const entryDate = new Date(moodEntries[i].createdAt);
-      entryDate.setHours(0, 0, 0, 0);
-      
-      const daysDiff = Math.floor((today.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24));
-      
-      if (daysDiff === streak) {
-        streak++;
-      } else {
-        break;
-      }
-    }
-    
-    return streak;
-  };
+  const thisWeeksMoods = moodEntries.filter(entry => {
+    const entryDate = new Date(entry.createdAt);
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    return entryDate >= weekAgo;
+  });
 
-  const stats = getMoodStats();
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-500"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setLocation("/")}
-            className="mr-4"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Mood Tracking</h1>
-            <p className="text-gray-600">Track and understand your emotional well-being</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      <div className="max-w-6xl mx-auto p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setLocation('/')}
+              className="text-gray-600 hover:text-gray-900"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Dashboard
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                Wellness Mood Tracking
+              </h1>
+              <p className="text-gray-600 mt-1">Monitor your emotional well-being and track patterns over time</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Heart className="w-6 h-6 text-pink-500" />
+            <Badge variant="outline" className="bg-pink-50 text-pink-700 border-pink-200">
+              Wellness Tracking Active
+            </Badge>
           </div>
         </div>
-      </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <Calendar className="w-6 h-6 text-blue-500" />
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <Card className="hover-lift border-0 shadow-lg bg-white/70 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                  <Heart className="w-6 h-6 text-purple-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Current Mood</p>
+                  <div className="flex items-center space-x-2">
+                    {latestMood ? (
+                      <>
+                        <span className="text-xl">{latestMood.emoji}</span>
+                        <span className="text-lg font-bold text-gray-900">{latestMood.mood}</span>
+                      </>
+                    ) : (
+                      <span className="text-lg font-bold text-gray-400">Not set</span>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Tracking Streak</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.streak} days</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-green-500" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">This Week</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalEntries} entries</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                <span className="text-xl">😊</span>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Most Common</p>
-                <p className="text-2xl font-bold text-gray-900 capitalize">{stats.mostCommonMood}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
 
-      {/* Tabbed Interface */}
-      <Tabs defaultValue="tracker" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="tracker">Track Mood</TabsTrigger>
-          <TabsTrigger value="trends">Trends & Analytics</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="tracker" className="space-y-6">
-          <div className="grid lg:grid-cols-2 gap-6">
-            {/* Mood Tracker */}
+          <Card className="hover-lift border-0 shadow-lg bg-white/70 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <Calendar className="w-6 h-6 text-blue-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Today's Entries</p>
+                  <p className="text-2xl font-bold text-gray-900">{todaysMoods.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="hover-lift border-0 shadow-lg bg-white/70 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                  <TrendingUp className="w-6 h-6 text-green-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">This Week</p>
+                  <p className="text-2xl font-bold text-gray-900">{thisWeeksMoods.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="hover-lift border-0 shadow-lg bg-white/70 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
+                  <BarChart3 className="w-6 h-6 text-amber-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Entries</p>
+                  <p className="text-2xl font-bold text-gray-900">{moodEntries.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Mood Tracker */}
+          <div className="lg:col-span-1">
             <MoodTracker />
+          </div>
 
-            {/* Recent Entries */}
-            <Card>
+          {/* Mood Trends */}
+          <div className="lg:col-span-2">
+            <MoodTrends />
+          </div>
+        </div>
+
+        {/* Recent Mood Entries */}
+        <Card className="hover-lift border-0 shadow-lg bg-white/70 backdrop-blur-sm">
           <CardHeader>
-            <CardTitle>Recent Mood Entries</CardTitle>
+            <CardTitle className="flex items-center">
+              <Calendar className="w-5 h-5 mr-2" />
+              Recent Mood Entries
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
-              <div className="space-y-3">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="animate-pulse">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
-                      <div className="flex-1">
-                        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                        <div className="h-3 bg-gray-200 rounded w-1/2 mt-1"></div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : moodEntries.length === 0 ? (
-              <div className="text-center py-8">
-                <span className="text-4xl mb-2 block">😊</span>
-                <p className="text-gray-500">No mood entries yet</p>
-                <p className="text-sm text-gray-400">Start tracking your mood to see entries here</p>
+            {moodEntries.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Heart className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No mood entries yet</h3>
+                <p className="text-gray-500 mb-4">Start tracking your mood to see patterns and insights over time.</p>
               </div>
             ) : (
-              <div className="space-y-4 max-h-96 overflow-y-auto">
-                {moodEntries.map((entry) => (
-                  <div key={entry.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center border">
-                      <span className="text-lg">{entry.emoji}</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className="font-medium text-gray-900 capitalize">{entry.mood}</p>
-                        <span className="text-sm text-gray-500">{formatDate(entry.createdAt)}</span>
+              <div className="space-y-4">
+                {moodEntries.slice(0, 10).map((entry) => (
+                  <div
+                    key={entry.id}
+                    className="flex items-start space-x-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="text-3xl">{entry.emoji}</div>
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <Badge className="bg-purple-100 text-purple-800">
+                          {entry.mood}
+                        </Badge>
+                        <span className="text-sm text-gray-500">
+                          {new Date(entry.createdAt).toLocaleString()}
+                        </span>
                       </div>
                       {entry.notes && (
-                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">{entry.notes}</p>
+                        <p className="text-sm text-gray-600">{entry.notes}</p>
                       )}
                     </div>
                   </div>
@@ -200,86 +200,7 @@ export default function MoodTrackingPage() {
             )}
           </CardContent>
         </Card>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="trends" className="space-y-6">
-          <MoodTrends />
-        </TabsContent>
-        
-        <TabsContent value="history" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Complete Mood History</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="space-y-3">
-                  {[...Array(10)].map((_, i) => (
-                    <div key={i} className="animate-pulse">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
-                        <div className="flex-1">
-                          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                          <div className="h-3 bg-gray-200 rounded w-1/2 mt-1"></div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : moodEntries.length === 0 ? (
-                <div className="text-center py-12">
-                  <span className="text-4xl mb-2 block">📊</span>
-                  <p className="text-gray-500">No mood history yet</p>
-                  <p className="text-sm text-gray-400">Start tracking your mood to build your emotional journey</p>
-                </div>
-              ) : (
-                <div className="space-y-4 max-h-96 overflow-y-auto">
-                  {moodEntries.map((entry) => (
-                    <div key={entry.id} className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                      <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center border-2 border-gray-200">
-                        <span className="text-xl">{entry.emoji}</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <p className="font-medium text-gray-900 capitalize">{entry.mood}</p>
-                          <span className="text-sm text-gray-500">{formatDate(entry.createdAt)}</span>
-                        </div>
-                        {entry.notes && (
-                          <p className="text-sm text-gray-600 mb-2">{entry.notes}</p>
-                        )}
-                        <div className="flex items-center space-x-2">
-                          <div className="w-16 bg-gray-200 rounded-full h-1.5">
-                            <div 
-                              className="h-1.5 rounded-full bg-blue-500" 
-                              style={{ width: `${(getMoodScore(entry.mood) / 10) * 100}%` }}
-                            />
-                          </div>
-                          <span className="text-xs text-gray-500">{getMoodScore(entry.mood)}/10</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      </div>
     </div>
   );
-
-  function getMoodScore(mood: string): number {
-    const scores: Record<string, number> = {
-      happy: 8,
-      excited: 9,
-      calm: 7,
-      content: 6,
-      tired: 4,
-      stressed: 3,
-      sad: 2,
-      anxious: 3
-    };
-    return scores[mood] || 5;
-  }
 }
