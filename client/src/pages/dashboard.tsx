@@ -146,42 +146,42 @@ export default function Dashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6 mb-8">
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-3 md:p-6">
               <div className="flex items-center">
-                <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
-                  <Coins className="w-6 h-6 text-primary-500" />
+                <div className="w-8 h-8 md:w-12 md:h-12 bg-primary-100 rounded-full flex items-center justify-center">
+                  <Coins className="w-4 h-4 md:w-6 md:h-6 text-primary-500" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Assets</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats?.totalAssets || 0}</p>
+                <div className="ml-2 md:ml-4">
+                  <p className="text-xs md:text-sm font-medium text-gray-600">Total Assets</p>
+                  <p className="text-lg md:text-2xl font-bold text-gray-900">{stats?.totalAssets || 0}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-3 md:p-6">
               <div className="flex items-center">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                  <Users className="w-6 h-6 text-green-500" />
+                <div className="w-8 h-8 md:w-12 md:h-12 bg-green-100 rounded-full flex items-center justify-center">
+                  <Users className="w-4 h-4 md:w-6 md:h-6 text-green-500" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Nominees</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats?.totalNominees || 0}</p>
+                <div className="ml-2 md:ml-4">
+                  <p className="text-xs md:text-sm font-medium text-gray-600">Nominees</p>
+                  <p className="text-lg md:text-2xl font-bold text-gray-900">{stats?.totalNominees || 0}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-3 md:p-6">
               <div className="flex items-center">
-                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                  <Bell className="w-6 h-6 text-orange-500" />
+                <div className="w-8 h-8 md:w-12 md:h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                  <Bell className="w-4 h-4 md:w-6 md:h-6 text-orange-500" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Alert Frequency</p>
-                  <p className="text-2xl font-bold text-gray-900 capitalize">
+                <div className="ml-2 md:ml-4">
+                  <p className="text-xs md:text-sm font-medium text-gray-600">Alert Frequency</p>
+                  <p className="text-lg md:text-2xl font-bold text-gray-900 capitalize">
                     {user?.alertFrequency || 'Daily'}
                   </p>
                 </div>
@@ -189,29 +189,29 @@ export default function Dashboard() {
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-3 md:p-6">
               <div className="flex items-center">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                  <Heart className="w-6 h-6 text-green-500" />
+                <div className="w-8 h-8 md:w-12 md:h-12 bg-green-100 rounded-full flex items-center justify-center">
+                  <Heart className="w-4 h-4 md:w-6 md:h-6 text-green-500" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Last Response</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                <div className="ml-2 md:ml-4">
+                  <p className="text-xs md:text-sm font-medium text-gray-600">Last Response</p>
+                  <p className="text-lg md:text-2xl font-bold text-gray-900">
                     {stats?.lastCheckin ? 'Just now' : 'Never'}
                   </p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Cloud className="w-6 h-6 text-blue-500" />
+          <Card className="col-span-2 md:col-span-1">
+            <CardContent className="p-3 md:p-6">
+              <div className="flex items-center justify-center md:justify-start">
+                <div className="w-8 h-8 md:w-12 md:h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Cloud className="w-4 h-4 md:w-6 md:h-6 text-blue-500" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Storage</p>
-                  <p className="text-2xl font-bold text-gray-900">95%</p>
+                <div className="ml-2 md:ml-4">
+                  <p className="text-xs md:text-sm font-medium text-gray-600">Storage</p>
+                  <p className="text-lg md:text-2xl font-bold text-gray-900">95%</p>
                 </div>
               </div>
             </CardContent>
