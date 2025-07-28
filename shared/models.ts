@@ -180,7 +180,7 @@ const AdminActionSchema = new Schema<IAdminAction>({
 const MoodEntrySchema = new Schema<IMoodEntry>({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   mood: { type: String, required: true },
-  intensity: { type: Number, min: 1, max: 5, required: true },
+  intensity: { type: Number, min: 1, max: 10, required: true },
   notes: { type: String },
   context: { type: String }
 }, {
