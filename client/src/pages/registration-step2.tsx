@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RegistrationProgress } from "@/components/ui/registration-progress";
 import { Shield, Lock, Eye, EyeOff, Check, RotateCcw } from "lucide-react";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
@@ -98,23 +99,12 @@ export default function RegistrationStep2() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-12">
       <div className="max-w-md mx-auto px-4">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <Shield className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Complete Your Account</h1>
-          <p className="text-gray-600">Step 2 of 2: Security Setup</p>
-        </div>
-
         {/* Progress Bar */}
-        <div className="mb-8 flex items-center justify-center space-x-4">
-          <div className="flex items-center">
-            <div className="w-4 h-4 bg-green-500 rounded-full"></div>
-            <div className="w-16 h-1 bg-green-500"></div>
-          </div>
-          <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
-        </div>
+        <RegistrationProgress 
+          currentStep={2} 
+          totalSteps={2} 
+          stepTitle="Security Setup" 
+        />
 
         {/* Step 1 Information Display */}
         {step1Data && (
@@ -136,7 +126,6 @@ export default function RegistrationStep2() {
               <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <Lock className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Secure Your Account</h2>
               <p className="text-gray-600 mt-2">Complete your registration with email and password</p>
             </div>
 

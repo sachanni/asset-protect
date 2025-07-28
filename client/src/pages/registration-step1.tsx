@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Progress } from "@/components/ui/progress";
+import { RegistrationProgress } from "@/components/ui/registration-progress";
 import { UserPlus, Shield } from "lucide-react";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
@@ -71,24 +71,21 @@ export default function RegistrationStep1() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-12">
       <div className="max-w-md mx-auto px-4">
         {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-primary-500">Step 1 of 2</span>
-            <span className="text-sm text-gray-500">50% Complete</span>
-          </div>
-          <Progress value={50} className="h-2" />
-        </div>
+        <RegistrationProgress 
+          currentStep={1} 
+          totalSteps={2} 
+          stepTitle="Basic Information" 
+        />
 
         <Card className="shadow-lg">
           <CardContent className="p-8">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gradient-to-r from-primary-600 to-primary-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <UserPlus className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Create Your Account</h2>
               <p className="text-gray-600 mt-2">Start securing your digital legacy today</p>
             </div>
 
