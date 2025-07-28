@@ -6,6 +6,25 @@ import { insertUserSchema, insertNomineeSchema, insertMoodEntrySchema } from "@s
 import { z } from "zod";
 import bcrypt from "bcrypt";
 
+// Additional validation schemas
+const registrationStep1Schema = z.object({
+  fullName: z.string().min(2),
+  dateOfBirth: z.string().transform(str => new Date(str)),
+  mobileNumber: z.string().min(10),
+  countryCode: z.string().default('+91'),
+  address: z.string().min(10),
+});
+
+const registrationStep2Schema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+  confirmPassword: z.string().min(6),
+  acceptTerms: z.boolean(),
+}).refine(data => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
 // Extend session type to include custom properties
 declare module 'express-session' {
   interface SessionData {
