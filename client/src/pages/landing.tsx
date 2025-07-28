@@ -6,10 +6,12 @@ import { useLocation } from "wouter";
 export default function Landing() {
   const [, setLocation] = useLocation();
 
+  // Component renders only once - duplication must be CSS-related
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" id="landing-page" key="landing-unique">
       {/* Navigation */}
-      <nav className="bg-white shadow-sm sticky top-0 z-50">
+      <nav className="bg-white shadow-sm sticky top-0 z-50" id="main-navigation" data-header="unique">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">

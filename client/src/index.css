@@ -145,6 +145,40 @@
     display: block;
     clear: both;
   }
+
+  /* Prevent header duplication issues */
+  #landing-page {
+    position: relative;
+    overflow-x: hidden;
+    isolation: isolate;
+  }
+  
+  #main-navigation {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    width: 100%;
+    display: block;
+    isolation: isolate;
+    transform: translateZ(0); /* Force hardware acceleration */
+  }
+  
+  /* Clear any pseudo-elements that might cause duplication */
+  #main-navigation::before,
+  #main-navigation::after {
+    display: none !important;
+  }
+  
+  /* Prevent any CSS transforms from creating visual duplicates */
+  .sticky {
+    backface-visibility: hidden;
+    transform: translateZ(0);
+  }
+  
+  /* Ensure only one header exists */
+  nav[data-header="unique"] ~ nav {
+    display: none !important;
+  }
 }
 
 /* Add primary color utilities for compatibility */

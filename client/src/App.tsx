@@ -39,7 +39,7 @@ function Router() {
           <Route path="/register/step1" component={RegistrationStep1} />
           <Route path="/register/step2" component={RegistrationStep2} />
           <Route path="/login" component={Login} />
-          <Route component={Landing} />
+          <Route component={NotFound} />
         </>
       ) : (
         <>
@@ -52,7 +52,7 @@ function Router() {
           <Route path="/mood-tracking" component={MoodTrackingPage} />
           <Route path="/wellness-dashboard" component={WellnessDashboard} />
           <Route path="/assets" component={AssetPortfolioPage} />
-          <Route component={Dashboard} />
+          <Route component={NotFound} />
         </>
       )}
     </Switch>
