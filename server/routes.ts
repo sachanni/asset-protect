@@ -2,9 +2,10 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertUserSchema, insertNomineeSchema, insertMoodEntrySchema } from "@shared/schema";
 import { z } from "zod";
 import bcrypt from "bcrypt";
+import mongoose from "mongoose";
+import { connectToDatabase } from "./database";
 
 // Additional validation schemas
 const registrationStep1Schema = z.object({
@@ -60,6 +61,13 @@ const nomineeSchema = z.object({
   email: z.string().optional(),
 });
 
+const moodEntrySchema = z.object({
+  mood: z.string(),
+  intensity: z.number().min(1).max(5),
+  notes: z.string().optional(),
+  context: z.string().optional(),
+});
+
 const wellBeingSettingsSchema = z.object({
   alertFrequency: z.enum(["daily", "weekly", "custom"]),
   customDays: z.number().min(1).max(30).optional(),
@@ -71,6 +79,9 @@ const wellBeingSettingsSchema = z.object({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Initialize MongoDB connection
+  await connectToDatabase();
+  
   // Auth middleware
   await setupAuth(app);
 

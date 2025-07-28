@@ -24,14 +24,14 @@ Preferred communication style: Simple, everyday language.
 - **Language**: TypeScript with ES modules
 - **Authentication**: Replit Auth with OpenID Connect
 - **Session Management**: Express sessions with PostgreSQL storage
-- **Database ORM**: Drizzle ORM with type-safe queries
+- **Database ODM**: Mongoose ODM with TypeScript models
 - **Password Hashing**: bcrypt for secure password storage
 
 ### Data Storage Solutions
-- **Primary Database**: PostgreSQL (configured for Neon serverless)
-- **Session Storage**: PostgreSQL table for session persistence
+- **Primary Database**: MongoDB (local instance for development) - Migrated from PostgreSQL (July 28, 2025)
+- **Session Storage**: Express sessions with memory storage
 - **Asset Storage**: Configurable (Google Drive, DigiLocker, or local server)
-- **Schema Management**: Drizzle migrations with version control
+- **Schema Management**: Mongoose schemas with TypeScript definitions
 
 ### Authentication and Authorization
 - **Primary Auth**: Replit Auth for seamless integration
@@ -128,11 +128,11 @@ Preferred communication style: Simple, everyday language.
 ## External Dependencies
 
 ### Core Dependencies
-- **@neondatabase/serverless**: PostgreSQL database connectivity
+- **mongoose**: MongoDB ODM for database operations
 - **@tanstack/react-query**: Server state management
 - **@radix-ui/***: UI component primitives
 - **bcrypt**: Password hashing and validation
-- **drizzle-orm**: Type-safe database operations
+- **mongodb**: MongoDB database system
 - **express**: Web server framework
 - **react-hook-form**: Form state management
 - **wouter**: Lightweight routing

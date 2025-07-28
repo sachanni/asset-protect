@@ -1,268 +1,232 @@
-import { db } from './db';
-import { users, nominees, assets, moodEntries, activityLogs } from '@shared/schema';
-import type { users as usersTable, nominees as nomineesTable, assets as assetsTable, moodEntries as moodEntriesTable, activityLogs as activityLogsTable } from '@shared/schema';
+import mongoose from 'mongoose';
+import bcrypt from 'bcrypt';
+import { 
+  User, Asset, Nominee, WellBeingAlert, AdminAction, MoodEntry, ActivityLog,
+  type UserType, type AssetType, type NomineeType, type WellBeingAlertType, 
+  type AdminActionType, type MoodEntryType, type ActivityLogType 
+} from '../shared/models';
 
-// Define types
-type InsertUser = typeof usersTable.$inferInsert;
-type SelectUser = typeof usersTable.$inferSelect;
-type InsertNominee = typeof nomineesTable.$inferInsert;
-type SelectNominee = typeof nomineesTable.$inferSelect;
-type InsertAsset = typeof assetsTable.$inferInsert;
-type SelectAsset = typeof assetsTable.$inferSelect;
-type InsertMoodEntry = typeof moodEntriesTable.$inferInsert;
-type SelectMoodEntry = typeof moodEntriesTable.$inferSelect;
-type SelectActivityLog = typeof activityLogsTable.$inferSelect;
-import { eq, desc, and } from 'drizzle-orm';
+// Define insert types (without MongoDB specific fields like _id, createdAt, updatedAt)
+type InsertUser = Omit<UserType, '_id' | 'createdAt' | 'updatedAt'>;
+type InsertAsset = Omit<AssetType, '_id' | 'createdAt' | 'updatedAt'>;
+type InsertNominee = Omit<NomineeType, '_id' | 'createdAt' | 'updatedAt'>;
+type InsertWellBeingAlert = Omit<WellBeingAlertType, '_id' | 'createdAt' | 'updatedAt'>;
+type InsertAdminAction = Omit<AdminActionType, '_id' | 'createdAt' | 'updatedAt'>;
+type InsertMoodEntry = Omit<MoodEntryType, '_id' | 'createdAt'>;
+type InsertActivityLog = Omit<ActivityLogType, '_id' | 'createdAt'>;
 
 export interface IStorage {
   // User operations
-  createUser(user: InsertUser): Promise<SelectUser>;
-  getUser(id: string): Promise<SelectUser | null>;
-  getUserById(id: string): Promise<SelectUser | null>;
-  getUserByEmail(email: string): Promise<SelectUser | null>;
-  getUserByMobile(mobileNumber: string): Promise<SelectUser | null>;
-  updateUser(id: string, user: Partial<InsertUser>): Promise<SelectUser>;
+  createUser(user: InsertUser): Promise<UserType>;
+  getUser(id: string): Promise<UserType | null>;
+  getUserById(id: string): Promise<UserType | null>;
+  getUserByEmail(email: string): Promise<UserType | null>;
+  getUserByMobile(mobileNumber: string): Promise<UserType | null>;
+  updateUser(id: string, user: Partial<InsertUser>): Promise<UserType>;
   deleteUser(id: string): Promise<void>;
-  listUsers(): Promise<SelectUser[]>;
+  listUsers(): Promise<UserType[]>;
 
   // Nominee operations
-  createNominee(nominee: InsertNominee): Promise<SelectNominee>;
-  getNomineeById(id: string): Promise<SelectNominee | null>;
-  getNomineesByUserId(userId: string): Promise<SelectNominee[]>;
-  updateNominee(id: string, nominee: Partial<InsertNominee>): Promise<SelectNominee>;
+  createNominee(nominee: InsertNominee): Promise<NomineeType>;
+  getNomineeById(id: string): Promise<NomineeType | null>;
+  getNomineesByUserId(userId: string): Promise<NomineeType[]>;
+  updateNominee(id: string, nominee: Partial<InsertNominee>): Promise<NomineeType>;
   deleteNominee(id: string): Promise<void>;
 
   // Asset operations
-  createAsset(asset: InsertAsset): Promise<SelectAsset>;
-  getAssetById(id: string): Promise<SelectAsset | null>;
-  getAssetsByUserId(userId: string): Promise<SelectAsset[]>;
-  updateAsset(id: string, asset: Partial<InsertAsset>): Promise<SelectAsset>;
+  createAsset(asset: InsertAsset): Promise<AssetType>;
+  getAssetById(id: string): Promise<AssetType | null>;
+  getAssetsByUserId(userId: string): Promise<AssetType[]>;
+  updateAsset(id: string, asset: Partial<InsertAsset>): Promise<AssetType>;
   deleteAsset(id: string): Promise<void>;
 
   // Mood operations
-  createMoodEntry(entry: InsertMoodEntry): Promise<SelectMoodEntry>;
-  getMoodEntriesByUserId(userId: string): Promise<SelectMoodEntry[]>;
-  getRecentMoodEntries(userId: string, limit?: number): Promise<SelectMoodEntry[]>;
+  createMoodEntry(entry: InsertMoodEntry): Promise<MoodEntryType>;
+  getMoodEntriesByUserId(userId: string): Promise<MoodEntryType[]>;
+  getRecentMoodEntries(userId: string, limit?: number): Promise<MoodEntryType[]>;
 
-  // Additional methods needed by routes
-  getAssets(userId: string): Promise<SelectAsset[]>;
-  getNominees(userId: string): Promise<SelectNominee[]>;
-  getAllUsers(): Promise<SelectUser[]>;
-  updateUserStatus(userId: string, status: string, reason?: string): Promise<SelectUser>;
-  getUsersAtRisk(): Promise<SelectUser[]>;
-  getRecentAdminLogs(limit?: number): Promise<SelectActivityLog[]>;
-  createAdminLog(log: any): Promise<any>;
-  updateUserWellBeing(userId: string, updates: any): Promise<SelectUser>;
-  updateUserWellBeingSettings(userId: string, settings: any): Promise<SelectUser>;
-  getUserMoodEntries(userId: string): Promise<SelectMoodEntry[]>;
-  getUserLatestMood(userId: string): Promise<SelectMoodEntry | null>;
-  getAdminStats(): Promise<any>;
-  createWellBeingAlert(alert: any): Promise<any>;
-  getWellBeingAlerts(userId: string): Promise<any[]>;
-  getPendingAdminActions(): Promise<any[]>;
-  getUsersWithExceededLimits(): Promise<any[]>;
-  createAdminAction(action: any): Promise<any>;
+  // Activity Log operations
+  createActivityLog(log: InsertActivityLog): Promise<ActivityLogType>;
+  getActivityLogs(options?: { category?: string; severity?: string; limit?: number }): Promise<ActivityLogType[]>;
+
+  // Well Being Alert operations
+  getWellBeingAlerts(userId?: string): Promise<WellBeingAlertType[]>;
+  createWellBeingAlert(alert: InsertWellBeingAlert): Promise<WellBeingAlertType>;
+  updateWellBeingAlert(userId: string, alert: Partial<InsertWellBeingAlert>): Promise<WellBeingAlertType>;
+  getUsersWithExceededLimits(): Promise<UserType[]>;
 
   // Admin operations
-  getActivityLogs(): Promise<SelectActivityLog[]>;
+  getPendingAdminActions(): Promise<AdminActionType[]>;
+  createAdminAction(action: InsertAdminAction): Promise<AdminActionType>;
+  updateAdminAction(id: string, action: Partial<InsertAdminAction>): Promise<AdminActionType>;
 }
 
-class PostgresStorage implements IStorage {
-  async createUser(user: InsertUser): Promise<SelectUser> {
-    const [newUser] = await db.insert(users).values(user).returning();
-    return newUser;
+export class MongoStorage implements IStorage {
+  
+  // User operations
+  async createUser(userData: InsertUser): Promise<UserType> {
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    const user = new User({
+      ...userData,
+      password: hashedPassword
+    });
+    return await user.save();
   }
 
-  async getUser(id: string): Promise<SelectUser | null> {
-    return this.getUserById(id);
+  async getUser(id: string): Promise<UserType | null> {
+    return await User.findById(id);
   }
 
-  async getUserById(id: string): Promise<SelectUser | null> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user || null;
+  async getUserById(id: string): Promise<UserType | null> {
+    return await User.findById(id);
   }
 
-  async getUserByEmail(email: string): Promise<SelectUser | null> {
-    const [user] = await db.select().from(users).where(eq(users.email, email));
-    return user || null;
+  async getUserByEmail(email: string): Promise<UserType | null> {
+    return await User.findOne({ email });
   }
 
-  async getUserByMobile(mobileNumber: string): Promise<SelectUser | null> {
-    const [user] = await db.select().from(users).where(eq(users.mobileNumber, mobileNumber));
-    return user || null;
+  async getUserByMobile(mobileNumber: string): Promise<UserType | null> {
+    return await User.findOne({ mobileNumber });
   }
 
-  async updateUser(id: string, user: Partial<InsertUser>): Promise<SelectUser> {
-    const [updatedUser] = await db.update(users).set(user).where(eq(users.id, id)).returning();
-    return updatedUser;
+  async updateUser(id: string, userData: Partial<InsertUser>): Promise<UserType> {
+    const user = await User.findByIdAndUpdate(id, userData, { new: true });
+    if (!user) throw new Error('User not found');
+    return user;
   }
 
   async deleteUser(id: string): Promise<void> {
-    await db.delete(users).where(eq(users.id, id));
+    await User.findByIdAndDelete(id);
   }
 
-  async listUsers(): Promise<SelectUser[]> {
-    return await db.select().from(users);
+  async listUsers(): Promise<UserType[]> {
+    return await User.find({}).sort({ createdAt: -1 });
   }
 
-  async createNominee(nominee: InsertNominee): Promise<SelectNominee> {
-    const [newNominee] = await db.insert(nominees).values(nominee).returning();
-    return newNominee;
+  // Nominee operations
+  async createNominee(nomineeData: InsertNominee): Promise<NomineeType> {
+    const nominee = new Nominee(nomineeData);
+    return await nominee.save();
   }
 
-  async getNomineeById(id: string): Promise<SelectNominee | null> {
-    const [nominee] = await db.select().from(nominees).where(eq(nominees.id, id));
-    return nominee || null;
+  async getNomineeById(id: string): Promise<NomineeType | null> {
+    return await Nominee.findById(id);
   }
 
-  async getNomineesByUserId(userId: string): Promise<SelectNominee[]> {
-    return await db.select().from(nominees).where(eq(nominees.userId, userId));
+  async getNomineesByUserId(userId: string): Promise<NomineeType[]> {
+    return await Nominee.find({ userId });
   }
 
-  async updateNominee(id: string, nominee: Partial<InsertNominee>): Promise<SelectNominee> {
-    const [updatedNominee] = await db.update(nominees).set(nominee).where(eq(nominees.id, id)).returning();
-    return updatedNominee;
+  async updateNominee(id: string, nomineeData: Partial<InsertNominee>): Promise<NomineeType> {
+    const nominee = await Nominee.findByIdAndUpdate(id, nomineeData, { new: true });
+    if (!nominee) throw new Error('Nominee not found');
+    return nominee;
   }
 
   async deleteNominee(id: string): Promise<void> {
-    await db.delete(nominees).where(eq(nominees.id, id));
+    await Nominee.findByIdAndDelete(id);
   }
 
-  async createAsset(asset: InsertAsset): Promise<SelectAsset> {
-    const [newAsset] = await db.insert(assets).values(asset).returning();
-    return newAsset;
+  // Asset operations
+  async createAsset(assetData: InsertAsset): Promise<AssetType> {
+    const asset = new Asset(assetData);
+    return await asset.save();
   }
 
-  async getAssetById(id: string): Promise<SelectAsset | null> {
-    const [asset] = await db.select().from(assets).where(eq(assets.id, id));
-    return asset || null;
+  async getAssetById(id: string): Promise<AssetType | null> {
+    return await Asset.findById(id);
   }
 
-  async getAssetsByUserId(userId: string): Promise<SelectAsset[]> {
-    return await db.select().from(assets).where(eq(assets.userId, userId));
+  async getAssetsByUserId(userId: string): Promise<AssetType[]> {
+    return await Asset.find({ userId });
   }
 
-  async updateAsset(id: string, asset: Partial<InsertAsset>): Promise<SelectAsset> {
-    const [updatedAsset] = await db.update(assets).set(asset).where(eq(assets.id, id)).returning();
-    return updatedAsset;
+  async updateAsset(id: string, assetData: Partial<InsertAsset>): Promise<AssetType> {
+    const asset = await Asset.findByIdAndUpdate(id, assetData, { new: true });
+    if (!asset) throw new Error('Asset not found');
+    return asset;
   }
 
   async deleteAsset(id: string): Promise<void> {
-    await db.delete(assets).where(eq(assets.id, id));
+    await Asset.findByIdAndDelete(id);
   }
 
-  async createMoodEntry(entry: InsertMoodEntry): Promise<SelectMoodEntry> {
-    const [newEntry] = await db.insert(moodEntries).values(entry).returning();
-    return newEntry;
+  // Mood operations
+  async createMoodEntry(entryData: InsertMoodEntry): Promise<MoodEntryType> {
+    const entry = new MoodEntry(entryData);
+    return await entry.save();
   }
 
-  async getMoodEntriesByUserId(userId: string): Promise<SelectMoodEntry[]> {
-    return await db.select().from(moodEntries).where(eq(moodEntries.userId, userId)).orderBy(desc(moodEntries.createdAt));
+  async getMoodEntriesByUserId(userId: string): Promise<MoodEntryType[]> {
+    return await MoodEntry.find({ userId }).sort({ createdAt: -1 });
   }
 
-  async getRecentMoodEntries(userId: string, limit: number = 10): Promise<SelectMoodEntry[]> {
-    return await db.select().from(moodEntries).where(eq(moodEntries.userId, userId)).orderBy(desc(moodEntries.createdAt)).limit(limit);
+  async getRecentMoodEntries(userId: string, limit: number = 10): Promise<MoodEntryType[]> {
+    return await MoodEntry.find({ userId })
+      .sort({ createdAt: -1 })
+      .limit(limit);
   }
 
-  // Additional methods implementation
-  async getAssets(userId: string): Promise<SelectAsset[]> {
-    return this.getAssetsByUserId(userId);
+  // Activity Log operations
+  async createActivityLog(logData: InsertActivityLog): Promise<ActivityLogType> {
+    const log = new ActivityLog(logData);
+    return await log.save();
   }
 
-  async getNominees(userId: string): Promise<SelectNominee[]> {
-    return this.getNomineesByUserId(userId);
-  }
-
-  async getAllUsers(): Promise<SelectUser[]> {
-    return this.listUsers();
-  }
-
-  async updateUserStatus(userId: string, status: string, reason?: string): Promise<SelectUser> {
-    return this.updateUser(userId, { accountStatus: status });
-  }
-
-  async getUsersAtRisk(): Promise<SelectUser[]> {
-    // Return users who haven't responded to well-being checks
-    return await db.select().from(users).where(eq(users.accountStatus, 'active'));
-  }
-
-  async getRecentAdminLogs(limit: number = 50): Promise<SelectActivityLog[]> {
-    return await db.select().from(activityLogs).orderBy(desc(activityLogs.createdAt)).limit(limit);
-  }
-
-  async createAdminLog(log: any): Promise<any> {
-    const [newLog] = await db.insert(activityLogs).values(log).returning();
-    return newLog;
-  }
-
-  async updateUserWellBeing(userId: string, updates: any): Promise<SelectUser> {
-    return this.updateUser(userId, updates);
-  }
-
-  async updateUserWellBeingSettings(userId: string, settings: any): Promise<SelectUser> {
-    return this.updateUser(userId, settings);
-  }
-
-  async getUserMoodEntries(userId: string): Promise<SelectMoodEntry[]> {
-    return this.getMoodEntriesByUserId(userId);
-  }
-
-  async getUserLatestMood(userId: string): Promise<SelectMoodEntry | null> {
-    const entries = await this.getRecentMoodEntries(userId, 1);
-    return entries[0] || null;
-  }
-
-  async getAdminStats(): Promise<any> {
-    const totalUsers = await db.select().from(users);
-    const activeUsers = await db.select().from(users).where(eq(users.accountStatus, 'active'));
+  async getActivityLogs(options: { category?: string; severity?: string; limit?: number } = {}): Promise<ActivityLogType[]> {
+    const query: any = {};
+    if (options.category) query.category = options.category;
+    if (options.severity) query.severity = options.severity;
     
-    return {
-      totalUsers: totalUsers.length,
-      activeUsers: activeUsers.length,
-      inactiveUsers: totalUsers.length - activeUsers.length
-    };
+    return await ActivityLog.find(query)
+      .sort({ createdAt: -1 })
+      .limit(options.limit || 100);
   }
 
-  async createWellBeingAlert(alert: any): Promise<any> {
-    const [newAlert] = await db.insert(activityLogs).values({
-      action: 'well_being_alert_created',
-      category: 'system',
-      description: `Well-being alert created for user ${alert.userId}`,
-      userId: alert.userId,
-      severity: 'warning'
-    }).returning();
-    return newAlert;
+  // Well Being Alert operations
+  async getWellBeingAlerts(userId?: string): Promise<WellBeingAlertType[]> {
+    const query = userId ? { userId } : {};
+    return await WellBeingAlert.find(query);
   }
 
-  async getActivityLogs(): Promise<SelectActivityLog[]> {
-    return await db.select().from(activityLogs).orderBy(desc(activityLogs.createdAt));
+  async createWellBeingAlert(alertData: InsertWellBeingAlert): Promise<WellBeingAlertType> {
+    const alert = new WellBeingAlert(alertData);
+    return await alert.save();
   }
 
-  async getWellBeingAlerts(userId: string): Promise<any[]> {
-    // Return mock data or implement with proper table when available
-    return [];
+  async updateWellBeingAlert(userId: string, alertData: Partial<InsertWellBeingAlert>): Promise<WellBeingAlertType> {
+    const alert = await WellBeingAlert.findOneAndUpdate({ userId }, alertData, { new: true });
+    if (!alert) throw new Error('Well-being alert not found');
+    return alert;
   }
 
-  async getPendingAdminActions(): Promise<any[]> {
-    // Return mock data or implement with proper table when available
-    return [];
+  async getUsersWithExceededLimits(): Promise<UserType[]> {
+    // Find alerts where currentCount >= maxMissedAlerts
+    const exceededAlerts = await WellBeingAlert.find({
+      $expr: { $gte: ['$currentCount', '$maxMissedAlerts'] }
+    }).populate('userId');
+    
+    return exceededAlerts
+      .map(alert => alert.userId)
+      .filter((user): user is UserType => user != null);
   }
 
-  async getUsersWithExceededLimits(): Promise<any[]> {
-    // Return users who exceeded well-being limits
-    return await db.select().from(users).where(eq(users.wellBeingCounter, users.maxWellBeingLimit));
+  // Admin operations
+  async getPendingAdminActions(): Promise<AdminActionType[]> {
+    return await AdminAction.find({ status: 'pending' }).sort({ createdAt: -1 });
   }
 
-  async createAdminAction(action: any): Promise<any> {
-    const [newAction] = await db.insert(activityLogs).values({
-      action: action.actionType || 'admin_action',
-      category: 'admin',
-      description: action.notes || 'Admin action performed',
-      userId: action.userId,
-      severity: 'info'
-    }).returning();
-    return newAction;
+  async createAdminAction(actionData: InsertAdminAction): Promise<AdminActionType> {
+    const action = new AdminAction(actionData);
+    return await action.save();
+  }
+
+  async updateAdminAction(id: string, actionData: Partial<InsertAdminAction>): Promise<AdminActionType> {
+    const action = await AdminAction.findByIdAndUpdate(id, actionData, { new: true });
+    if (!action) throw new Error('Admin action not found');
+    return action;
   }
 }
 
-export const storage = new PostgresStorage();
+// Create singleton instance
+export const storage = new MongoStorage();
