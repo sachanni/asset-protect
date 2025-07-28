@@ -15,6 +15,7 @@ import AddNominee from "@/pages/add-nominee";
 import AddAsset from "@/pages/add-asset";
 import WellBeingSettings from "@/pages/well-being-settings";
 import MoodTrackingPage from "@/pages/mood-tracking";
+import WellnessDashboard from "@/pages/wellness-dashboard";
 import AssetPortfolioPage from "@/pages/asset-portfolio";
 
 import AdminPanel from "@/pages/admin-panel";
@@ -40,6 +41,7 @@ function Router() {
           <Route path="/add-asset" component={AddAsset} />
           <Route path="/well-being-settings" component={WellBeingSettings} />
           <Route path="/mood-tracking" component={MoodTrackingPage} />
+          <Route path="/wellness-dashboard" component={WellnessDashboard} />
           <Route path="/assets" component={AssetPortfolioPage} />
 
 

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Coins, Users, Heart, Cloud, Plus, ChevronDown, LogOut, Bell } from "lucide-react";
+import { Shield, Coins, Users, Heart, Cloud, Plus, ChevronDown, LogOut, Bell, BarChart3 } from "lucide-react";
 import WellBeingAlert from "@/components/well-being-alert";
 import AssetCard from "@/components/asset-card";
 import NomineeCard from "@/components/nominee-card";
@@ -310,6 +310,15 @@ export default function Dashboard() {
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Add Asset
+                  </Button>
+                  <Button 
+                    className="flex-1 text-sm md:text-base" 
+                    variant="outline"
+                    onClick={() => setLocation("/wellness-dashboard")}
+                    size="sm"
+                  >
+                    <BarChart3 className="w-4 h-4 mr-2" />
+                    Analytics
                   </Button>
                 </div>
               </div>

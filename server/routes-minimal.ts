@@ -231,5 +231,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Mood entries route for analytics dashboard
+  app.get("/api/mood-entries", combinedAuth, async (req: any, res: Response) => {
+    try {
+      const moodEntries = await storage.getMoodEntriesByUserId(req.userId);
+      res.json(moodEntries);
+    } catch (error: any) {
+      console.error("Mood entries fetch error:", error);
+      res.status(500).json({ message: "Failed to fetch mood entries" });
+    }
+  });
+
+  // Create mood entry
+  app.post("/api/mood", combinedAuth, async (req: any, res: Response) => {
+    try {
+      const { mood, intensity, notes, context } = req.body;
+      
+      if (!mood || intensity === undefined) {
+        return res.status(400).json({ message: "Mood and intensity are required" });
+      }
+
+      const moodEntry = await storage.createMoodEntry({
+        userId: req.userId,
+        mood,
+        intensity: Number(intensity),
+        notes,
+        context
+      });
+
+      res.json(moodEntry);
+    } catch (error: any) {
+      console.error("Error creating mood entry:", error);
+      res.status(500).json({ message: "Failed to save mood entry" });
+    }
+  });
+
+  // Create sample mood data for new users
+  app.post("/api/mood/sample-data", combinedAuth, async (req: any, res: Response) => {
+    try {
+      const sampleMoods = [
+        { mood: "happy", intensity: 8, notes: "Great day at work!", context: "work" },
+        { mood: "content", intensity: 7, notes: "Peaceful evening", context: "personal" },
+        { mood: "excited", intensity: 9, notes: "Weekend plans!", context: "social" },
+        { mood: "neutral", intensity: 5, notes: "Regular day", context: "daily" },
+        { mood: "grateful", intensity: 8, notes: "Time with family", context: "family" },
+        { mood: "energetic", intensity: 9, notes: "Morning workout", context: "health" },
+        { mood: "anxious", intensity: 4, notes: "Meeting preparation", context: "work" },
+        { mood: "very-happy", intensity: 10, notes: "Birthday celebration", context: "special" }
+      ];
+
+      const createdEntries = [];
+      for (let i = 0; i < sampleMoods.length; i++) {
+        const sampleMood = sampleMoods[i];
+        const entry = await storage.createMoodEntry({
+          userId: req.userId,
+          ...sampleMood
+        });
+        createdEntries.push(entry);
+      }
+
+      res.json({ success: true, entriesCreated: createdEntries.length });
+    } catch (error: any) {
+      console.error("Error creating sample mood data:", error);
+      res.status(500).json({ message: "Failed to create sample data" });
+    }
+  });
+
   return createServer(app);
 }
