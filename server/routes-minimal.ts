@@ -350,5 +350,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Emotional Insights endpoint
+  app.get("/api/emotional-insights", combinedAuth, async (req: any, res: Response) => {
+    try {
+      const { generateEmotionalInsights } = await import('./ai-insights.js');
+      
+      // Get user's mood entries
+      const moodEntries = await storage.getMoodEntriesByUserId(req.userId);
+      
+      // Generate AI insights
+      const insights = await generateEmotionalInsights(moodEntries);
+      
+      res.json(insights);
+    } catch (error: any) {
+      console.error("Error generating emotional insights:", error);
+      res.status(500).json({ message: "Failed to generate emotional insights" });
+    }
+  });
+
+  // AI Mood Recommendation endpoint
+  app.post("/api/mood-recommendation", combinedAuth, async (req: any, res: Response) => {
+    try {
+      const { generateMoodRecommendation } = await import('./ai-insights.js');
+      const { mood, intensity, context } = req.body;
+      
+      if (!mood || intensity === undefined) {
+        return res.status(400).json({ message: "Mood and intensity are required" });
+      }
+      
+      const recommendation = await generateMoodRecommendation(mood, intensity, context);
+      
+      res.json({ recommendation });
+    } catch (error: any) {
+      console.error("Error generating mood recommendation:", error);
+      res.status(500).json({ message: "Failed to generate mood recommendation" });
+    }
+  });
+
   return createServer(app);
 }

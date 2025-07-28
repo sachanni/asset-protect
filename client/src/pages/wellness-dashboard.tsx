@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, TrendingUp, BarChart3, Activity, Heart, Smile, Zap } from "lucide-react";
+import { Calendar, TrendingUp, BarChart3, Activity, Heart, Smile, Zap, Sparkles, Brain } from "lucide-react";
+import EmotionalInsightsOverlay from "@/components/emotional-insights-overlay";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -43,20 +44,23 @@ const MOOD_EMOJIS = {
   "energetic": "⚡"
 };
 
+// Mood colors mapping
 const MOOD_COLORS = {
   "very-happy": "#10B981",
-  "happy": "#34D399",
-  "content": "#6EE7B7",
-  "neutral": "#9CA3AF",
-  "slightly-sad": "#FBBF24",
-  "sad": "#F59E0B",
-  "angry": "#EF4444",
-  "stressed": "#DC2626",
-  "anxious": "#B91C1C",
-  "excited": "#8B5CF6",
+  "happy": "#3B82F6",
+  "content": "#8B5CF6",
+  "neutral": "#6B7280",
+  "slightly-sad": "#F59E0B",
+  "sad": "#EF4444",
+  "angry": "#DC2626",
+  "stressed": "#F97316",
+  "anxious": "#EAB308",
+  "excited": "#EC4899",
   "grateful": "#06B6D4",
-  "energetic": "#F59E0B"
+  "energetic": "#84CC16"
 };
+
+
 
 interface MoodEntry {
   _id: string;
@@ -80,6 +84,7 @@ interface MoodStats {
 export default function WellnessDashboard() {
   const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d" | "1y">("30d");
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
+  const [showInsightsOverlay, setShowInsightsOverlay] = useState(false);
 
   // Fetch mood entries
   const { data: moodEntries = [], isLoading } = useQuery<MoodEntry[]>({
@@ -135,6 +140,15 @@ export default function WellnessDashboard() {
           <p className="text-lg text-gray-600 dark:text-gray-300">
             Track your emotional journey and discover patterns in your wellbeing
           </p>
+          <div className="mt-6">
+            <Button
+              onClick={() => setShowInsightsOverlay(true)}
+              className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-2"
+            >
+              <Sparkles className="w-5 h-5" />
+              <span>AI Emotional Insights</span>
+            </Button>
+          </div>
         </motion.div>
 
         {/* Time Range Selector */}
@@ -401,6 +415,12 @@ export default function WellnessDashboard() {
           </Card>
         </motion.div>
       </div>
+      
+      {/* AI Emotional Insights Overlay */}
+      <EmotionalInsightsOverlay 
+        isOpen={showInsightsOverlay}
+        onClose={() => setShowInsightsOverlay(false)}
+      />
     </div>
   );
 }
