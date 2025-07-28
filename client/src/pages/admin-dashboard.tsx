@@ -52,7 +52,7 @@ interface AdminStats {
   totalAssets: number;
   totalNominees: number;
   usersAtRisk: number;
-  recentActions: any[];
+  recentActivities: ActivityLog[];
 }
 
 interface AdminUser {
@@ -69,9 +69,38 @@ interface AdminUser {
   isActive: boolean;
 }
 
+interface ActivityLog {
+  id: string;
+  userId: string | null;
+  adminId: string | null;
+  action: string;
+  category: string;
+  description: string;
+  metadata: any;
+  ipAddress: string | null;
+  userAgent: string | null;
+  severity: string;
+  createdAt: string;
+}
+
+interface UserRiskAssessment {
+  id: string;
+  userId: string;
+  riskLevel: string;
+  riskFactors: string[];
+  assessmentReason: string;
+  assessedBy: string | null;
+  isResolved: boolean;
+  resolvedAt: string | null;
+  resolvedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function AdminDashboard() {
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [actionReason, setActionReason] = useState('');
+  const [activeTab, setActiveTab] = useState('user-management');
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();

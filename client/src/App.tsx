@@ -17,6 +17,7 @@ import WellBeingSettings from "@/pages/well-being-settings";
 import MoodTrackingPage from "@/pages/mood-tracking";
 import AssetPortfolioPage from "@/pages/asset-portfolio";
 import SelfCarePage from "@/pages/self-care";
+import AdminPanel from "@/pages/admin-panel";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -34,6 +35,7 @@ function Router() {
         <>
           <Route path="/" component={Dashboard} />
           <Route path="/admin" component={AdminDashboard} />
+          <Route path="/admin-panel" component={AdminPanel} />
           <Route path="/add-nominee" component={AddNominee} />
           <Route path="/add-asset" component={AddAsset} />
           <Route path="/well-being-settings" component={WellBeingSettings} />

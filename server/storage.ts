@@ -8,6 +8,8 @@ import {
   moodEntries,
   selfCareRecommendations,
   wellnessPreferences,
+  activityLogs,
+  userRiskAssessments,
   type User,
   type UpsertUser,
   type Nominee,
@@ -26,6 +28,10 @@ import {
   type InsertSelfCareRecommendation,
   type WellnessPreferences,
   type InsertWellnessPreferences,
+  type ActivityLog,
+  type InsertActivityLog,
+  type UserRiskAssessment,
+  type InsertUserRiskAssessment,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, sql } from "drizzle-orm";
@@ -554,6 +560,108 @@ export class DatabaseStorage implements IStorage {
       .update(wellnessPreferences)
       .set({ ...updates, updatedAt: new Date() })
       .where(eq(wellnessPreferences.userId, userId));
+  }
+
+  // New admin methods for comprehensive user management and monitoring
+  async updateUserStatus(userId: string, status: string, adminId: string, reason?: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ 
+        accountStatus: status, 
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId));
+
+    // Log the admin action
+    await this.createActivityLog({
+      userId,
+      adminId,
+      action: `user_status_changed_to_${status}`,
+      category: 'admin',
+      description: `User status changed to ${status}${reason ? `: ${reason}` : ''}`,
+      metadata: { previousStatus: status, reason },
+      severity: status === 'suspended' ? 'warning' : 'info',
+    });
+  }
+
+  async getUsersAtRisk(): Promise<User[]> {
+    return await db
+      .select()
+      .from(users)
+      .where(
+        and(
+          eq(users.isActive, true),
+          gte(users.wellBeingCounter, sql`${users.maxWellBeingLimit} * 0.8`)
+        )
+      )
+      .orderBy(desc(users.wellBeingCounter));
+  }
+
+  async createActivityLog(log: InsertActivityLog): Promise<ActivityLog> {
+    const [newLog] = await db.insert(activityLogs).values(log).returning();
+    return newLog;
+  }
+
+  async getActivityLogs(limit: number = 50): Promise<ActivityLog[]> {
+    return await db
+      .select()
+      .from(activityLogs)
+      .orderBy(desc(activityLogs.createdAt))
+      .limit(limit);
+  }
+
+  async createUserRiskAssessment(assessment: InsertUserRiskAssessment): Promise<UserRiskAssessment> {
+    const [newAssessment] = await db.insert(userRiskAssessments).values(assessment).returning();
+    return newAssessment;
+  }
+
+  async getUserRiskAssessments(userId?: string): Promise<UserRiskAssessment[]> {
+    let query = db.select().from(userRiskAssessments);
+    
+    if (userId) {
+      query = query.where(eq(userRiskAssessments.userId, userId));
+    }
+    
+    return await query.orderBy(desc(userRiskAssessments.createdAt));
+  }
+
+  async updateUserRiskAssessment(assessmentId: string, updates: Partial<UserRiskAssessment>): Promise<void> {
+    await db
+      .update(userRiskAssessments)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(userRiskAssessments.id, assessmentId));
+  }
+
+  async getAdminStats(): Promise<{
+    totalUsers: number;
+    activeUsers: number;
+    suspendedUsers: number;
+    deactivatedUsers: number;
+    usersAtRisk: number;
+    totalAssets: number;
+    totalNominees: number;
+    recentActivities: ActivityLog[];
+  }> {
+    const [totalUsersResult] = await db.select({ count: sql<number>`count(*)` }).from(users);
+    const [activeUsersResult] = await db.select({ count: sql<number>`count(*)` }).from(users).where(eq(users.accountStatus, 'active'));
+    const [suspendedUsersResult] = await db.select({ count: sql<number>`count(*)` }).from(users).where(eq(users.accountStatus, 'suspended'));
+    const [deactivatedUsersResult] = await db.select({ count: sql<number>`count(*)` }).from(users).where(eq(users.accountStatus, 'deactivated'));
+    const [totalAssetsResult] = await db.select({ count: sql<number>`count(*)` }).from(assets);
+    const [totalNomineesResult] = await db.select({ count: sql<number>`count(*)` }).from(nominees);
+    
+    const usersAtRisk = await this.getUsersAtRisk();
+    const recentActivities = await this.getActivityLogs(10);
+
+    return {
+      totalUsers: totalUsersResult.count,
+      activeUsers: activeUsersResult.count,
+      suspendedUsers: suspendedUsersResult.count,
+      deactivatedUsers: deactivatedUsersResult.count,
+      usersAtRisk: usersAtRisk.length,
+      totalAssets: totalAssetsResult.count,
+      totalNominees: totalNomineesResult.count,
+      recentActivities,
+    };
   }
 }
 

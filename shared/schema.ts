@@ -124,6 +124,36 @@ export const assets = pgTable("assets", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Activity logs table for admin monitoring
+export const activityLogs = pgTable("activity_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id), // Can be null for system actions
+  adminId: varchar("admin_id").references(() => users.id), // Admin who performed the action
+  action: varchar("action").notNull(), // login, asset_created, mood_logged, admin_action, etc.
+  category: varchar("category").notNull(), // user, admin, system, security
+  description: text("description").notNull(),
+  metadata: jsonb("metadata"), // Additional context data
+  ipAddress: varchar("ip_address"),
+  userAgent: varchar("user_agent"),
+  severity: varchar("severity").default('info'), // info, warning, error, critical
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// User risk assessments table
+export const userRiskAssessments = pgTable("user_risk_assessments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  riskLevel: varchar("risk_level").notNull(), // low, medium, high, critical
+  riskFactors: text("risk_factors").array(), // missed_checkins, no_response, long_inactivity
+  assessmentReason: text("assessment_reason").notNull(),
+  assessedBy: varchar("assessed_by").references(() => users.id), // Admin ID
+  isResolved: boolean("is_resolved").default(false),
+  resolvedAt: timestamp("resolved_at"),
+  resolvedBy: varchar("resolved_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const wellBeingAlerts = pgTable("well_being_alerts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id),
@@ -214,6 +244,10 @@ export type SelfCareRecommendation = typeof selfCareRecommendations.$inferSelect
 export type InsertSelfCareRecommendation = z.infer<typeof insertSelfCareRecommendationSchema>;
 export type WellnessPreferences = typeof wellnessPreferences.$inferSelect;
 export type InsertWellnessPreferences = z.infer<typeof insertWellnessPreferencesSchema>;
+export type ActivityLog = typeof activityLogs.$inferSelect;
+export type InsertActivityLog = z.infer<typeof insertActivityLogSchema>;
+export type UserRiskAssessment = typeof userRiskAssessments.$inferSelect;
+export type InsertUserRiskAssessment = z.infer<typeof insertUserRiskAssessmentSchema>;
 
 // Admin activity logs
 export const adminLogs = pgTable("admin_logs", {
