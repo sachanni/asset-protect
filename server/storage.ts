@@ -58,6 +58,10 @@ export interface IStorage {
   getUserLatestMood(userId: string): Promise<SelectMoodEntry | null>;
   getAdminStats(): Promise<any>;
   createWellBeingAlert(alert: any): Promise<any>;
+  getWellBeingAlerts(userId: string): Promise<any[]>;
+  getPendingAdminActions(): Promise<any[]>;
+  getUsersWithExceededLimits(): Promise<any[]>;
+  createAdminAction(action: any): Promise<any>;
 
   // Admin operations
   getActivityLogs(): Promise<SelectActivityLog[]>;
@@ -232,6 +236,32 @@ class PostgresStorage implements IStorage {
 
   async getActivityLogs(): Promise<SelectActivityLog[]> {
     return await db.select().from(activityLogs).orderBy(desc(activityLogs.createdAt));
+  }
+
+  async getWellBeingAlerts(userId: string): Promise<any[]> {
+    // Return mock data or implement with proper table when available
+    return [];
+  }
+
+  async getPendingAdminActions(): Promise<any[]> {
+    // Return mock data or implement with proper table when available
+    return [];
+  }
+
+  async getUsersWithExceededLimits(): Promise<any[]> {
+    // Return users who exceeded well-being limits
+    return await db.select().from(users).where(eq(users.wellBeingCounter, users.maxWellBeingLimit));
+  }
+
+  async createAdminAction(action: any): Promise<any> {
+    const [newAction] = await db.insert(activityLogs).values({
+      action: action.actionType || 'admin_action',
+      category: 'admin',
+      description: action.notes || 'Admin action performed',
+      userId: action.userId,
+      severity: 'info'
+    }).returning();
+    return newAction;
   }
 }
 

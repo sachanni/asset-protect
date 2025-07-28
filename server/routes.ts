@@ -9,7 +9,7 @@ import bcrypt from "bcrypt";
 // Additional validation schemas
 const registrationStep1Schema = z.object({
   fullName: z.string().min(2),
-  dateOfBirth: z.string().transform(str => new Date(str)),
+  dateOfBirth: z.string(),
   mobileNumber: z.string().min(10),
   countryCode: z.string().default('+91'),
   address: z.string().min(10),
@@ -17,12 +17,8 @@ const registrationStep1Schema = z.object({
 
 const registrationStep2Schema = z.object({
   email: z.string().email(),
-  password: z.string().min(6),
-  confirmPassword: z.string().min(6),
-  acceptTerms: z.boolean(),
-}).refine(data => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
+  password: z.string().min(8),
+  captcha: z.string().min(5),
 });
 
 // Extend session type to include custom properties
@@ -40,20 +36,6 @@ declare module 'express-session' {
     userId?: string;
   }
 }
-
-const registrationStep1Schema = z.object({
-  fullName: z.string().min(2),
-  dateOfBirth: z.string(),
-  mobileNumber: z.string().min(10),
-  countryCode: z.string().default('+91'),
-  address: z.string().min(10),
-});
-
-const registrationStep2Schema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
-  captcha: z.string().min(5),
-});
 
 const loginSchema = z.object({
   identifier: z.string(), // mobile or email
@@ -193,10 +175,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create user
+      const passwordHash = await bcrypt.hash(validatedData.password, 10);
       const userData = {
         ...step1Data,
         email: validatedData.email,
-        password: validatedData.password,
+        passwordHash,
         dateOfBirth: new Date(step1Data.dateOfBirth),
       };
 
@@ -377,7 +360,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.userId;
       
-      await storage.updateUserWellBeing(userId);
+      await storage.updateUserWellBeing(userId, {
+        lastWellBeingCheck: new Date(),
+        wellBeingCounter: 0
+      });
       
       res.json({ success: true, message: "Well-being confirmed" });
     } catch (error: any) {
@@ -458,7 +444,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.userId;
       const limit = parseInt(req.query.limit as string) || 30;
       
-      const moods = await storage.getUserMoodEntries(userId, limit);
+      const moods = await storage.getUserMoodEntries(userId);
       res.json(moods);
     } catch (error: any) {
       res.status(500).json({ message: "Failed to fetch mood entries", error: error.message });
@@ -529,7 +515,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalUsers: users.length,
         activeUsers,
         pendingAlerts: usersWithExceededLimits.length,
-        pendingValidations: pendingActions.filter(a => a.actionType === 'death_validation').length,
+        pendingValidations: pendingActions.filter((a: any) => a.actionType === 'death_validation').length,
       });
     } catch (error: any) {
       res.status(500).json({ message: "Failed to fetch admin stats", error: error.message });
@@ -541,7 +527,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // TODO: Add admin role check
       const usersWithExceededLimits = await storage.getUsersWithExceededLimits();
       const usersWithNominees = await Promise.all(
-        usersWithExceededLimits.map(async (user) => ({
+        usersWithExceededLimits.map(async (user: any) => ({
           ...user,
           nominees: await storage.getNominees(user.id),
         }))
@@ -640,7 +626,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/activity-logs", requireAdmin, async (req, res) => {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
-      const logs = await storage.getActivityLogs(limit);
+      const logs = await storage.getActivityLogs();
       res.json(logs);
     } catch (error) {
       console.error('Error getting activity logs:', error);
@@ -672,9 +658,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.updateUserStatus(userId, accountStatus);
       
       // Log admin action
-      if (req.user) {
+      if (req.user && (req.user as any).id) {
         await storage.createAdminLog({
-          adminUserId: req.user.id,
+          adminUserId: (req.user as any).id,
           action: `user_${accountStatus}`,
           targetUserId: userId,
           details: reason || `User account ${accountStatus}`
@@ -752,9 +738,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       // Log admin action
-      if (req.user) {
+      if (req.user && (req.user as any).id) {
         await storage.createAdminLog({
-          adminUserId: req.user.id,
+          adminUserId: (req.user as any).id,
           action: 'alert_triggered',
           targetUserId: userId,
           details: message || 'Admin triggered well-being alert'
