@@ -51,7 +51,6 @@ function Router() {
           <Route path="/mood-tracking" component={MoodTrackingPage} />
           <Route path="/wellness-dashboard" component={WellnessDashboard} />
           <Route path="/assets" component={AssetPortfolioPage} />
-          <Route component={NotFound} />
         </>
       )}
     </Switch>

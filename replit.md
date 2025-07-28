@@ -98,6 +98,12 @@ Preferred communication style: Simple, everyday language.
 - RESTful API endpoints for all admin operations
 - Verified working with comprehensive user management features (July 27, 2025)
 
+### Recent Issues Fixed ❌→✓ (July 28, 2025)
+- **Header Duplication**: Fixed duplicate "WellnessLegacy" headers on landing page using CSS isolation and hardware acceleration
+- **404 Routing Error**: Removed problematic catch-all routes that were causing NotFound component to render alongside main content on all pages
+- **Landing Page Display**: Clean rendering without visual duplicates or routing conflicts
+- **Dashboard Display**: Fixed 404 errors appearing at bottom of authenticated pages
+
 ## Data Flow
 
 ### User Registration Flow
