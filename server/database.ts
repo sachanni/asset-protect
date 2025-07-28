@@ -5,14 +5,20 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/wellne
 export async function connectToDatabase() {
   try {
     await mongoose.connect(MONGODB_URI, {
-      serverSelectionTimeoutMS: 5000, // 5 second timeout
+      serverSelectionTimeoutMS: 10000, // 10 second timeout
+      socketTimeoutMS: 30000,
+      connectTimeoutMS: 30000,
+      maxPoolSize: 10,
+      retryWrites: true,
     });
     console.log('✅ Connected to MongoDB successfully');
     return true;
   } catch (error) {
     console.error('❌ MongoDB connection error:', error);
-    console.log('ℹ️  Continuing without MongoDB - using in-memory storage');
-    return false;
+    if (error instanceof Error) {
+      console.error('Error details:', error.message);
+    }
+    throw new Error('Failed to connect to MongoDB. Please check connection string and database availability.');
   }
 }
 

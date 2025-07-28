@@ -6,14 +6,77 @@ import {
   type AdminActionType, type MoodEntryType, type ActivityLogType 
 } from '../shared/models';
 
-// Define insert types (without MongoDB specific fields like _id, createdAt, updatedAt)
-type InsertUser = Omit<UserType, '_id' | 'createdAt' | 'updatedAt'>;
-type InsertAsset = Omit<AssetType, '_id' | 'createdAt' | 'updatedAt'>;
-type InsertNominee = Omit<NomineeType, '_id' | 'createdAt' | 'updatedAt'>;
-type InsertWellBeingAlert = Omit<WellBeingAlertType, '_id' | 'createdAt' | 'updatedAt'>;
-type InsertAdminAction = Omit<AdminActionType, '_id' | 'createdAt' | 'updatedAt'>;
-type InsertMoodEntry = Omit<MoodEntryType, '_id' | 'createdAt'>;
-type InsertActivityLog = Omit<ActivityLogType, '_id' | 'createdAt'>;
+// Define insert types for MongoDB
+type InsertUser = {
+  fullName: string;
+  dateOfBirth: Date;
+  mobileNumber: string;
+  countryCode: string;
+  address: string;
+  email: string;
+  password: string;
+  isVerified: boolean;
+};
+
+type InsertAsset = {
+  userId: string;
+  assetType: string;
+  title: string;
+  description: string;
+  value: string;
+  currency: string;
+  contactInfo: string;
+  storageLocation: string;
+  accessInstructions: string;
+};
+
+type InsertNominee = {
+  userId: string;
+  fullName: string;
+  relationship: string;
+  mobileNumber: string;
+  email?: string;
+  isVerified?: boolean;
+};
+
+type InsertMoodEntry = {
+  userId: string;
+  mood: string;
+  intensity: number;
+  notes?: string;
+  context?: string;
+};
+
+type InsertWellBeingAlert = {
+  userId: string;
+  alertFrequency: 'daily' | 'weekly' | 'custom';
+  customDays?: number;
+  alertTime: string;
+  enableSMS: boolean;
+  enableEmail: boolean;
+  maxMissedAlerts: number;
+  escalationEnabled: boolean;
+  currentCount?: number;
+  isActive?: boolean;
+};
+
+type InsertAdminAction = {
+  userId: string;
+  actionType: 'death_verification' | 'notification_approved' | 'account_suspended';
+  adminId: string;
+  description: string;
+  status?: 'pending' | 'completed' | 'cancelled';
+};
+
+type InsertActivityLog = {
+  userId?: string;
+  adminId?: string;
+  category: 'user' | 'admin' | 'system' | 'security';
+  action: string;
+  description: string;
+  severity?: 'info' | 'warning' | 'error' | 'critical';
+  metadata?: Record<string, any>;
+};
 
 export interface IStorage {
   // User operations
@@ -64,7 +127,7 @@ export interface IStorage {
 export class MongoStorage implements IStorage {
   
   // User operations
-  async createUser(userData: InsertUser): Promise<UserType> {
+  async createUser(userData: InsertUser): Promise<any> {
     const hashedPassword = await bcrypt.hash(userData.password, 10);
     const user = new User({
       ...userData,
@@ -73,23 +136,23 @@ export class MongoStorage implements IStorage {
     return await user.save();
   }
 
-  async getUser(id: string): Promise<UserType | null> {
+  async getUser(id: string): Promise<any> {
     return await User.findById(id);
   }
 
-  async getUserById(id: string): Promise<UserType | null> {
+  async getUserById(id: string): Promise<any> {
     return await User.findById(id);
   }
 
-  async getUserByEmail(email: string): Promise<UserType | null> {
+  async getUserByEmail(email: string): Promise<any> {
     return await User.findOne({ email });
   }
 
-  async getUserByMobile(mobileNumber: string): Promise<UserType | null> {
+  async getUserByMobile(mobileNumber: string): Promise<any> {
     return await User.findOne({ mobileNumber });
   }
 
-  async updateUser(id: string, userData: Partial<InsertUser>): Promise<UserType> {
+  async updateUser(id: string, userData: Partial<InsertUser>): Promise<any> {
     const user = await User.findByIdAndUpdate(id, userData, { new: true });
     if (!user) throw new Error('User not found');
     return user;
@@ -99,7 +162,7 @@ export class MongoStorage implements IStorage {
     await User.findByIdAndDelete(id);
   }
 
-  async listUsers(): Promise<UserType[]> {
+  async listUsers(): Promise<any[]> {
     return await User.find({}).sort({ createdAt: -1 });
   }
 
@@ -204,11 +267,13 @@ export class MongoStorage implements IStorage {
     // Find alerts where currentCount >= maxMissedAlerts
     const exceededAlerts = await WellBeingAlert.find({
       $expr: { $gte: ['$currentCount', '$maxMissedAlerts'] }
-    }).populate('userId');
+    });
     
-    return exceededAlerts
-      .map(alert => alert.userId)
-      .filter((user): user is UserType => user != null);
+    // Get user IDs and fetch users separately
+    const userIds = exceededAlerts.map(alert => alert.userId);
+    const users = await User.find({ _id: { $in: userIds } });
+    
+    return users;
   }
 
   // Admin operations
