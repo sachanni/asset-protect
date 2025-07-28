@@ -37,6 +37,13 @@ const wellBeingSettingsSchema = z.object({
   escalationEnabled: z.boolean(),
 });
 
+const moodEntrySchema = z.object({
+  mood: z.string().min(1, "Mood is required"),
+  intensity: z.number().min(1).max(10),
+  notes: z.string().optional(),
+  context: z.string().optional(),
+});
+
 declare module 'express-session' {
   interface SessionData {
     registrationStep1?: {
@@ -484,6 +491,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error confirming well-being:", error);
       res.status(500).json({ message: "Failed to confirm well-being" });
+    }
+  });
+
+  // Mood tracking endpoints
+  app.post("/api/mood", combinedAuth, async (req: any, res: Response) => {
+    try {
+      console.log('Mood tracking request:', { body: req.body, userId: req.userId });
+      
+      const moodData = moodEntrySchema.parse(req.body);
+      
+      const mood = await storage.createMoodEntry({
+        userId: req.userId,
+        ...moodData
+      });
+      
+      console.log('Mood entry created successfully:', mood);
+      res.json({ success: true, mood });
+    } catch (error: any) {
+      console.error('Mood tracking error:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ message: "Mood and intensity are required" });
+      }
+      res.status(400).json({ message: "Failed to track mood", error: error.message });
+    }
+  });
+
+  app.get("/api/mood/entries", combinedAuth, async (req: any, res: Response) => {
+    try {
+      const moods = await storage.getMoodEntriesByUserId(req.userId);
+      res.json(moods);
+    } catch (error: any) {
+      console.error("Error fetching mood entries:", error);
+      res.status(500).json({ message: "Failed to fetch mood entries" });
+    }
+  });
+
+  app.get("/api/mood/latest", combinedAuth, async (req: any, res: Response) => {
+    try {
+      const moods = await storage.getMoodEntriesByUserId(req.userId);
+      const latestMood = moods.length > 0 ? moods[0] : null;
+      res.json(latestMood);
+    } catch (error: any) {
+      console.error("Error fetching latest mood:", error);
+      res.status(500).json({ message: "Failed to fetch latest mood" });
     }
   });
 
