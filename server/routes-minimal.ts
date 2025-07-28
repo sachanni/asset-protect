@@ -56,6 +56,7 @@ declare module 'express-session' {
     otp?: string;
     otpExpiry?: number;
     userId?: string;
+    isAdmin?: boolean;
   }
 }
 
@@ -83,6 +84,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/auth/user', async (req: any, res: Response) => {
     try {
       if (req.session?.userId) {
+        // Handle admin user
+        if (req.session.userId === "admin" && req.session.isAdmin) {
+          return res.json({ 
+            id: "admin", 
+            email: "admin@aulnovatechsoft.com", 
+            fullName: "System Administrator",
+            isAdmin: true 
+          });
+        }
+        
+        // Handle regular user
         const user = await storage.getUserById(req.session.userId);
         if (user) {
           return res.json({ id: user._id, email: user.email, fullName: user.fullName });
@@ -94,8 +106,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       res.status(401).json({ message: 'Unauthorized' });
-    } catch (error) {
-      res.status(500).json({ message: 'Server error' });
+    } catch (error: any) {
+      console.error('Auth user error:', error);
+      res.status(500).json({ message: 'Server error', error: error.message });
     }
   });
 
