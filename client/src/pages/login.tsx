@@ -76,15 +76,20 @@ export default function Login() {
       });
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       // Invalidate auth query to refresh user state
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "Login Successful",
         description: "Welcome back!",
       });
-      // Small delay to allow query invalidation to complete
-      setTimeout(() => setLocation("/"), 100);
+      
+      // Check if login response includes redirect path (for admin)
+      if (data.redirectTo) {
+        setTimeout(() => setLocation(data.redirectTo), 100);
+      } else {
+        setTimeout(() => setLocation("/"), 100);
+      }
     },
     onError: (error: Error) => {
       toast({

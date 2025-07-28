@@ -327,15 +327,6 @@ export default function Dashboard() {
                     <BarChart3 className="w-4 h-4 mr-2" />
                     Analytics
                   </Button>
-                  <Button 
-                    className="flex-1 text-sm md:text-base" 
-                    variant="outline" 
-                    onClick={() => setLocation("/admin-panel")}
-                    size="sm"
-                  >
-                    <Shield className="w-4 h-4 mr-2" />
-                    Admin Panel
-                  </Button>
                 </div>
               </div>
             </CardContent>

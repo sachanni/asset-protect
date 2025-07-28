@@ -169,6 +169,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Password is required" });
       }
 
+      // Check for admin credentials first
+      if (identifier === "admin@aulnovatechsoft.com" && password === "Admin@123") {
+        // Set admin session
+        req.session.userId = "admin";
+        req.session.isAdmin = true;
+        
+        return res.json({
+          success: true,
+          user: { id: "admin", email: "admin@aulnovatechsoft.com", fullName: "System Administrator" },
+          redirectTo: "/admin-panel"
+        });
+      }
+
       // Find user by email or mobile
       let user = await storage.getUserByEmail(identifier);
       if (!user) {
