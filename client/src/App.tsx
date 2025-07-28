@@ -16,7 +16,7 @@ import AddAsset from "@/pages/add-asset";
 import WellBeingSettings from "@/pages/well-being-settings";
 import MoodTrackingPage from "@/pages/mood-tracking";
 import AssetPortfolioPage from "@/pages/asset-portfolio";
-import SelfCarePage from "@/pages/self-care";
+
 import AdminPanel from "@/pages/admin-panel";
 
 function Router() {
@@ -41,7 +41,7 @@ function Router() {
           <Route path="/well-being-settings" component={WellBeingSettings} />
           <Route path="/mood-tracking" component={MoodTrackingPage} />
           <Route path="/assets" component={AssetPortfolioPage} />
-          <Route path="/self-care" component={SelfCarePage} />
+
         </>
       )}
       <Route component={NotFound} />
