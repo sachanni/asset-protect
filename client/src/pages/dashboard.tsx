@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Coins, Users, Heart, Cloud, Plus, ChevronDown, LogOut, Bell, Headphones } from "lucide-react";
+import { Shield, Coins, Users, Heart, Cloud, Plus, ChevronDown, LogOut, Bell } from "lucide-react";
 import WellBeingAlert from "@/components/well-being-alert";
 import AssetCard from "@/components/asset-card";
 import NomineeCard from "@/components/nominee-card";
@@ -257,36 +257,7 @@ export default function Dashboard() {
           {/* Mood Tracker */}
           <MoodTracker compact={true} />
 
-          {/* Sound Library */}
-          <Card className="hover-lift border-0 shadow-lg bg-white/70 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-lg flex items-center justify-center">
-                  <Headphones className="w-4 h-4 text-blue-600" />
-                </div>
-                <span>Sound Library</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 mb-2">
-                    Relaxing sounds and ambient music tailored to your current mood
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Nature sounds, meditation tracks, focus music, and more
-                  </p>
-                </div>
-                <Button 
-                  onClick={() => setLocation("/sound-library")}
-                  className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white"
-                >
-                  <Headphones className="w-4 h-4 mr-2" />
-                  Listen
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+
         </div>
 
         {/* Well-being Check Alert - Only show when needed */}

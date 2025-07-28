@@ -8,7 +8,6 @@ import {
   text,
   integer,
   boolean,
-  decimal,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -63,44 +62,6 @@ export const moodEntries = pgTable("mood_entries", {
   mood: varchar("mood").notNull(), // happy, sad, stressed, calm, excited, tired, etc.
   emoji: varchar("emoji").notNull(), // 😊, 😢, 😰, 😌, 🤩, 😴, etc.
   notes: text("notes"), // Optional user notes
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-// Relaxation sounds library
-export const soundLibrary = pgTable("sound_library", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  title: varchar("title").notNull(),
-  description: text("description"),
-  category: varchar("category").notNull(), // 'nature', 'ambient', 'meditation', 'sleep', 'focus'
-  moodTags: text("mood_tags").array(), // ['calm', 'stressed', 'anxious', 'happy', 'sad', 'tired']
-  audioUrl: varchar("audio_url").notNull(), // URL to audio file
-  duration: integer("duration").notNull(), // Duration in seconds
-  isLoop: boolean("is_loop").default(true),
-  volume: decimal("volume", { precision: 3, scale: 2 }).default('0.50'), // 0.00 - 1.00
-  thumbnailUrl: varchar("thumbnail_url"), // Optional thumbnail image
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-// User's sound preferences and history
-export const userSoundHistory = pgTable("user_sound_history", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  soundId: varchar("sound_id").notNull().references(() => soundLibrary.id),
-  playDuration: integer("play_duration"), // How long they listened in seconds
-  rating: integer("rating"), // 1-5 stars
-  isFavorite: boolean("is_favorite").default(false),
-  playedAt: timestamp("played_at").defaultNow(),
-});
-
-// Sound playlists based on moods
-export const soundPlaylists = pgTable("sound_playlists", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: varchar("name").notNull(),
-  description: text("description"),
-  moodContext: varchar("mood_context").notNull(), // The mood this playlist is designed for
-  soundIds: text("sound_ids").array(), // Array of sound IDs
-  isDefault: boolean("is_default").default(false), // System-created playlists
-  createdBy: varchar("created_by"), // For future user-created playlists
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -222,20 +183,18 @@ export const insertMoodEntrySchema = createInsertSchema(moodEntries).omit({
   createdAt: true,
 });
 
-export const insertSoundLibrarySchema = createInsertSchema(soundLibrary).omit({
+export const insertActivityLogSchema = createInsertSchema(activityLogs).omit({
   id: true,
   createdAt: true,
 });
 
-export const insertUserSoundHistorySchema = createInsertSchema(userSoundHistory).omit({
-  id: true,
-  playedAt: true,
-});
-
-export const insertSoundPlaylistSchema = createInsertSchema(soundPlaylists).omit({
+export const insertUserRiskAssessmentSchema = createInsertSchema(userRiskAssessments).omit({
   id: true,
   createdAt: true,
+  updatedAt: true,
 });
+
+
 
 
 
@@ -254,12 +213,7 @@ export type InsertAdminAction = z.infer<typeof insertAdminActionSchema>;
 export type MoodEntry = typeof moodEntries.$inferSelect;
 export type InsertMoodEntry = z.infer<typeof insertMoodEntrySchema>;
 
-export type SoundLibrary = typeof soundLibrary.$inferSelect;
-export type InsertSoundLibrary = z.infer<typeof insertSoundLibrarySchema>;
-export type UserSoundHistory = typeof userSoundHistory.$inferSelect;
-export type InsertUserSoundHistory = z.infer<typeof insertUserSoundHistorySchema>;
-export type SoundPlaylist = typeof soundPlaylists.$inferSelect;
-export type InsertSoundPlaylist = z.infer<typeof insertSoundPlaylistSchema>;
+
 
 export type ActivityLog = typeof activityLogs.$inferSelect;
 export type InsertActivityLog = z.infer<typeof insertActivityLogSchema>;
