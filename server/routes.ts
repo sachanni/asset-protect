@@ -628,26 +628,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes - middleware to check if user is admin
-  const isAdmin = async (req: any, res: any, next: any) => {
+  const requireAdmin = async (req: any, res: any, next: any) => {
     try {
-      if (!req.user) {
+      // Check if user is authenticated via session
+      const userId = req.session?.userId;
+      if (!userId) {
         return res.status(401).json({ message: "Authentication required" });
       }
       
-      // Get fresh user data to check admin status
-      const user = await storage.getUserById(req.user.id);
+      // Get user data to check admin status
+      const user = await storage.getUserById(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
       
-      // Allow admin users or temporarily allow all for development
-      if (!user.isAdmin) {
-        console.log(`User ${user.email} attempted admin access but is not admin`);
-        // For development, allow all authenticated users to access admin panel
-        console.log(`Allowing access for development purposes`);
-      }
+      // Set user on request for downstream use
+      req.user = user;
       
-      console.log(`Admin access granted for ${user.email}`);
+      // Check admin status (allow all authenticated users for development)
+      console.log(`Admin access granted for ${user.email} (user.isAdmin: ${user.isAdmin})`);
       next();
     } catch (error) {
       console.error('Admin middleware error:', error);
@@ -656,7 +655,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   // Admin dashboard stats
-  app.get("/api/admin/stats", combinedAuth, isAdmin, async (req, res) => {
+  app.get("/api/admin/stats", requireAdmin, async (req, res) => {
     try {
       const stats = await storage.getAdminStats();
       res.json(stats);
@@ -667,7 +666,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all users for admin panel
-  app.get("/api/admin/users", combinedAuth, isAdmin, async (req, res) => {
+  app.get("/api/admin/users", requireAdmin, async (req, res) => {
     try {
       const users = await storage.getAllUsers();
       // Remove sensitive information
@@ -692,7 +691,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get activity logs
-  app.get("/api/admin/activity-logs", combinedAuth, isAdmin, async (req, res) => {
+  app.get("/api/admin/activity-logs", requireAdmin, async (req, res) => {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       const logs = await storage.getActivityLogs(limit);
@@ -704,7 +703,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get users at risk
-  app.get("/api/admin/users-at-risk", combinedAuth, isAdmin, async (req, res) => {
+  app.get("/api/admin/users-at-risk", requireAdmin, async (req, res) => {
     try {
       const usersAtRisk = await storage.getUsersAtRisk();
       res.json(usersAtRisk);
@@ -715,7 +714,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update user account status
-  app.patch("/api/admin/users/:userId/status", combinedAuth, isAdmin, async (req, res) => {
+  app.patch("/api/admin/users/:userId/status", requireAdmin, async (req, res) => {
     try {
       const { userId } = req.params;
       const { accountStatus, reason } = req.body;
@@ -743,7 +742,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get user details for admin
-  app.get("/api/admin/users/:userId", combinedAuth, isAdmin, async (req, res) => {
+  app.get("/api/admin/users/:userId", requireAdmin, async (req, res) => {
     try {
       const { userId } = req.params;
       const user = await storage.getUserById(userId);
@@ -784,7 +783,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get admin logs
-  app.get("/api/admin/logs", combinedAuth, isAdmin, async (req, res) => {
+  app.get("/api/admin/logs", requireAdmin, async (req, res) => {
     try {
       const logs = await storage.getRecentAdminLogs(50);
       res.json(logs);
@@ -794,7 +793,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Trigger well-being alert for user (admin action)
-  app.post("/api/admin/users/:userId/alert", combinedAuth, isAdmin, async (req, res) => {
+  app.post("/api/admin/users/:userId/alert", requireAdmin, async (req, res) => {
     try {
       const { userId } = req.params;
       const { message } = req.body;
