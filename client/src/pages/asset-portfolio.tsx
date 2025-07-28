@@ -304,7 +304,7 @@ export default function AssetPortfolioPage() {
                 </TableRow>
               ) : (
                 sortedAssets.map((asset) => (
-                  <TableRow key={asset.id} className="hover:bg-blue-50/50 transition-colors duration-200">
+                  <TableRow key={asset._id} className="hover:bg-blue-50/50 transition-colors duration-200">
                     {visibleColumns.map((column) => {
                       switch (column.key) {
                         case 'assetType':

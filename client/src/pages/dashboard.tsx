@@ -287,9 +287,11 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent className="p-4 md:p-6">
               <div className="space-y-3 md:space-y-4">
-                {stats?.recentAssets?.map((asset) => (
-                  <AssetCard key={asset.id} asset={asset} />
-                )) || (
+                {assetsData.length > 0 ? (
+                  assetsData.slice(0, 3).map((asset) => (
+                    <AssetCard key={asset._id} asset={asset} />
+                  ))
+                ) : (
                   <p className="text-gray-500 text-center py-6 md:py-8 text-sm md:text-base">No assets added yet</p>
                 )}
                 <div className="flex flex-col space-y-2 md:flex-row md:space-y-0 md:space-x-2">
@@ -341,9 +343,11 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent className="p-4 md:p-6">
               <div className="space-y-3 md:space-y-4">
-                {stats?.nominees?.map((nominee) => (
-                  <NomineeCard key={nominee.id} nominee={nominee} />
-                )) || (
+                {nomineesData.length > 0 ? (
+                  nomineesData.slice(0, 3).map((nominee) => (
+                    <NomineeCard key={nominee._id} nominee={nominee} />
+                  ))
+                ) : (
                   <p className="text-gray-500 text-center py-6 md:py-8 text-sm md:text-base">No nominees added yet</p>
                 )}
                 <Button 
@@ -384,7 +388,7 @@ export default function Dashboard() {
           <div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
               {assetsData.map((asset: any) => (
-                <AssetCard key={asset.id} asset={asset} />
+                <AssetCard key={asset._id} asset={asset} />
               ))}
             </div>
             <Button onClick={() => setLocation("/add-asset")}>
@@ -420,7 +424,7 @@ export default function Dashboard() {
           <div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
               {nomineesData.map((nominee: any) => (
-                <NomineeCard key={nominee.id} nominee={nominee} />
+                <NomineeCard key={nominee._id} nominee={nominee} />
               ))}
             </div>
             <Button 
