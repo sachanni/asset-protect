@@ -209,6 +209,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { identifier, password, otp } = loginSchema.parse(req.body);
       
+      console.log("Login attempt - identifier:", identifier, "password provided:", !!password);
+      
+      // Check for admin credentials first
+      if (identifier === "admin@aulnovatechsoft.com" && password === "Admin@123") {
+        console.log("Admin login successful!");
+        // Set admin session
+        req.session.userId = "admin";
+        req.session.isAdmin = true;
+        
+        return res.json({
+          success: true,
+          user: { id: "admin", email: "admin@aulnovatechsoft.com", fullName: "System Administrator" },
+          redirectTo: "/admin-panel"
+        });
+      }
+      
       // Find user by email or mobile
       let user = await storage.getUserByEmail(identifier);
       if (!user) {
@@ -216,7 +232,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       if (!user) {
-        return res.status(401).json({ message: "User not found" });
+        return res.status(401).json({ message: "Invalid credentials" });
       }
 
       // For OTP login (priority)
@@ -241,7 +257,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         const isValidPassword = await bcrypt.compare(password, user.passwordHash);
         if (!isValidPassword) {
-          return res.status(401).json({ message: "Invalid password" });
+          return res.status(401).json({ message: "Invalid credentials" });
         }
         
         req.session.userId = user.id;
@@ -578,7 +594,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Authentication required" });
       }
       
-      // Get user data to check admin status
+      // Check for admin session
+      if (userId === "admin" && req.session?.isAdmin) {
+        // Set admin user on request for downstream use
+        req.user = { id: "admin", email: "admin@aulnovatechsoft.com", fullName: "System Administrator", isAdmin: true };
+        return next();
+      }
+      
+      // Get regular user data to check admin status
       const user = await storage.getUserById(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
