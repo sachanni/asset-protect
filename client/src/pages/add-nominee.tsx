@@ -54,6 +54,19 @@ export default function AddNominee() {
   const mutation = useMutation({
     mutationFn: async (data: NomineeFormData) => {
       const response = await apiRequest("POST", "/api/nominees", data);
+      if (!response.ok) {
+        const errorData = await response.text();
+        // Check if response is HTML (not JSON)
+        if (errorData.includes("<!DOCTYPE html>")) {
+          throw new Error("Authentication required. Please log in again.");
+        }
+        try {
+          const jsonError = JSON.parse(errorData);
+          throw new Error(jsonError.message || "Failed to add nominee");
+        } catch {
+          throw new Error("Failed to add nominee. Please try again.");
+        }
+      }
       return response.json();
     },
     onSuccess: () => {

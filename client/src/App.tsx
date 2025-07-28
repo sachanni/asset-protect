@@ -23,14 +23,23 @@ import AdminPanel from "@/pages/admin-panel";
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
   return (
     <Switch>
-      {isLoading || !isAuthenticated ? (
+      {!isAuthenticated ? (
         <>
           <Route path="/" component={Landing} />
           <Route path="/register/step1" component={RegistrationStep1} />
           <Route path="/register/step2" component={RegistrationStep2} />
           <Route path="/login" component={Login} />
+          <Route component={Landing} />
         </>
       ) : (
         <>
@@ -43,11 +52,9 @@ function Router() {
           <Route path="/mood-tracking" component={MoodTrackingPage} />
           <Route path="/wellness-dashboard" component={WellnessDashboard} />
           <Route path="/assets" component={AssetPortfolioPage} />
-
-
+          <Route component={Dashboard} />
         </>
       )}
-      <Route component={NotFound} />
     </Switch>
   );
 }

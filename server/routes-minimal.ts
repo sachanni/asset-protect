@@ -209,7 +209,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Assets route
+  // Assets routes
   app.get("/api/assets", combinedAuth, async (req: any, res: Response) => {
     try {
       const assets = await storage.getAssetsByUserId(req.userId);
@@ -220,7 +220,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Nominees route
+  app.post("/api/assets", combinedAuth, async (req: any, res: Response) => {
+    try {
+      const { assetType, title, description, value, currency, contactInfo, storageLocation, accessInstructions } = req.body;
+      
+      if (!assetType || !title || !value) {
+        return res.status(400).json({ message: "Asset type, title, and value are required" });
+      }
+
+      const assetData = {
+        userId: req.userId,
+        assetType,
+        title,
+        description: description || "",
+        value,
+        currency: currency || "USD",
+        contactInfo: contactInfo || "",
+        storageLocation: storageLocation || "local",
+        accessInstructions: accessInstructions || ""
+      };
+
+      const asset = await storage.createAsset(assetData);
+      res.json(asset);
+    } catch (error: any) {
+      console.error("Error creating asset:", error);
+      res.status(500).json({ message: "Failed to create asset" });
+    }
+  });
+
+  // Nominees routes
   app.get("/api/nominees", combinedAuth, async (req: any, res: Response) => {
     try {
       const nominees = await storage.getNomineesByUserId(req.userId);
@@ -228,6 +256,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Nominees fetch error:", error);
       res.status(500).json({ message: "Failed to fetch nominees" });
+    }
+  });
+
+  app.post("/api/nominees", combinedAuth, async (req: any, res: Response) => {
+    try {
+      const { fullName, relationship, mobileNumber, email } = req.body;
+      
+      if (!fullName || !relationship || !mobileNumber) {
+        return res.status(400).json({ message: "Full name, relationship, and mobile number are required" });
+      }
+
+      const nomineeData = {
+        userId: req.userId,
+        fullName,
+        relationship,
+        mobileNumber,
+        email: email || undefined,
+        isVerified: false
+      };
+
+      const nominee = await storage.createNominee(nomineeData);
+      res.json(nominee);
+    } catch (error: any) {
+      console.error("Error creating nominee:", error);
+      res.status(500).json({ message: "Failed to create nominee" });
     }
   });
 
