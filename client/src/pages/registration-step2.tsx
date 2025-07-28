@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RegistrationProgress } from "@/components/ui/registration-progress";
-import { Shield, Lock, Eye, EyeOff, Check, RotateCcw } from "lucide-react";
+import { Shield, Lock, Eye, EyeOff, Check } from "lucide-react";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,7 +21,6 @@ const step2Schema = z.object({
     .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
     .regex(/[0-9]/, "Password must contain at least one number"),
   confirmPassword: z.string(),
-  captcha: z.string().min(5, "Please enter the captcha code"),
   agreeToTerms: z.boolean().refine(val => val === true, "Please agree to the terms"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
@@ -34,7 +33,6 @@ export default function RegistrationStep2() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
-  const [captchaCode] = useState("7K9X2");
   const [step1Data, setStep1Data] = useState<any>(null);
   
   const {
@@ -72,7 +70,6 @@ export default function RegistrationStep2() {
       const response = await apiRequest("POST", "/api/register/step2", {
         email: data.email,
         password: data.password,
-        captcha: data.captcha,
       });
       return response.json();
     },
@@ -189,29 +186,7 @@ export default function RegistrationStep2() {
                 )}
               </div>
 
-              {/* CAPTCHA */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <div className="flex items-center justify-between mb-3">
-                  <Label>Security Verification</Label>
-                  <button type="button" className="text-xs text-primary-500 hover:text-primary-600 flex items-center">
-                    <RotateCcw className="w-3 h-3 mr-1" />
-                    Refresh
-                  </button>
-                </div>
-                <div className="flex space-x-3 items-center">
-                  <div className="bg-white border-2 border-dashed border-gray-300 rounded px-4 py-2 text-lg font-mono text-gray-700 tracking-widest">
-                    {captchaCode}
-                  </div>
-                  <Input
-                    {...register("captcha")}
-                    placeholder="Enter code"
-                    className="flex-1"
-                  />
-                </div>
-                {errors.captcha && (
-                  <p className="text-sm text-red-600 mt-1">{errors.captcha.message}</p>
-                )}
-              </div>
+
 
               <div className="flex items-start space-x-2">
                 <Checkbox

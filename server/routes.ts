@@ -18,7 +18,6 @@ const registrationStep1Schema = z.object({
 const registrationStep2Schema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
-  captcha: z.string().min(5),
 });
 
 // Extend session type to include custom properties

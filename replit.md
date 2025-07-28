@@ -102,7 +102,7 @@ Preferred communication style: Simple, everyday language.
 
 ### User Registration Flow
 1. Step 1: Personal information collection (name, DOB, mobile, address)
-2. Step 2: Account creation (email, password, terms acceptance)
+2. Step 2: Account creation (email, password, terms acceptance) - Security verification removed per user request (July 28, 2025)
 3. Account verification and activation
 4. Profile completion with nominee setup
 

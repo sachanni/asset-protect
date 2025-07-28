@@ -17,14 +17,14 @@ export default function Landing() {
                 <div className="w-8 h-8 bg-gradient-to-r from-primary-600 to-primary-500 rounded-lg flex items-center justify-center">
                   <Shield className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-xl font-bold text-gray-900">SecureVault</span>
+                <span className="text-xl font-bold text-gray-900">WellnessLegacy</span>
               </div>
             </div>
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-4">
                 <a href="#home" className="text-primary-500 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium">Home</a>
-                <a href="#features" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Features</a>
-                <a href="#security" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Security</a>
+                <a href="#features" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Wellness</a>
+                <a href="#security" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Legacy</a>
                 <a href="#contact" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Contact</a>
               </div>
             </div>
@@ -44,9 +44,9 @@ export default function Landing() {
       <section className="bg-gradient-to-r from-primary-600 to-primary-500 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">Secure Your Digital Legacy</h1>
+            <h1 className="text-4xl md:text-6xl font-bold mb-6">Digital Wellness & Legacy Protection</h1>
             <p className="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto">
-              Protect and transfer your digital assets to your loved ones with our trusted posthumous notification system
+              Monitor your wellness, track your mood, and ensure your digital assets reach your loved ones with our comprehensive wellness platform
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
@@ -73,9 +73,9 @@ export default function Landing() {
       <section id="features" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Comprehensive Asset Protection</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Wellness Monitoring & Legacy Protection</h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Our platform ensures your digital assets and important information reach your designated beneficiaries safely and securely
+              Track your daily wellness, monitor your mood, and ensure your digital legacy reaches your loved ones when needed
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
@@ -95,9 +95,9 @@ export default function Landing() {
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Heart className="w-8 h-8 text-green-500" />
                 </div>
-                <h3 className="text-xl font-semibold mb-3">Well-being Checks</h3>
+                <h3 className="text-xl font-semibold mb-3">Mood & Wellness Tracking</h3>
                 <p className="text-gray-600">
-                  Configurable wellness alerts ensure system activation only when needed, with admin verification process
+                  Daily mood logging with 12 emotional states, wellness analytics, and configurable check-in alerts
                 </p>
               </CardContent>
             </Card>
