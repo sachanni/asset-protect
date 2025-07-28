@@ -39,7 +39,7 @@ import {
 } from 'lucide-react';
 
 interface Asset {
-  id: string;
+  _id: string;
   assetType: string;
   title: string;
   description?: string;
