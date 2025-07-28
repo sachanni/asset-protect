@@ -39,7 +39,6 @@ function Router() {
           <Route path="/register/step1" component={RegistrationStep1} />
           <Route path="/register/step2" component={RegistrationStep2} />
           <Route path="/login" component={Login} />
-          <Route component={NotFound} />
         </>
       ) : (
         <>
