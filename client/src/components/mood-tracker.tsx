@@ -53,7 +53,7 @@ export default function MoodTracker({ compact = false }: MoodTrackerProps) {
         title: 'Mood tracked successfully!',
         description: 'Your emotional wellness data has been recorded.',
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/mood'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/mood/entries'] });
       queryClient.invalidateQueries({ queryKey: ['/api/mood/latest'] });
       setSelectedMood(null);
       setNotes('');

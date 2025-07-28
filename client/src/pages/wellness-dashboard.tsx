@@ -88,7 +88,7 @@ export default function WellnessDashboard() {
 
   // Fetch mood entries
   const { data: moodEntries = [], isLoading } = useQuery<MoodEntry[]>({
-    queryKey: ["/api/mood-entries"],
+    queryKey: ["/api/mood/entries"],
   });
 
   // Calculate mood statistics

@@ -519,7 +519,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/mood/entries", combinedAuth, async (req: any, res: Response) => {
     try {
+      console.log('Fetching mood entries for user:', req.userId);
       const moods = await storage.getMoodEntriesByUserId(req.userId);
+      console.log('Found mood entries:', moods.length);
       res.json(moods);
     } catch (error: any) {
       console.error("Error fetching mood entries:", error);
