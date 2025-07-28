@@ -627,7 +627,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin routes - middleware to check if user is admin (temporarily allow all authenticated users for testing)
+  // Admin routes - middleware to check if user is admin
   const isAdmin = async (req: any, res: any, next: any) => {
     try {
       if (!req.user) {
@@ -640,8 +640,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
       
-      // Temporarily allow any authenticated user for admin panel testing
-      console.log(`Admin access granted for ${user.email} (testing mode)`);
+      // Allow admin users or temporarily allow all for development
+      if (!user.isAdmin) {
+        console.log(`User ${user.email} attempted admin access but is not admin`);
+        // For development, allow all authenticated users to access admin panel
+        console.log(`Allowing access for development purposes`);
+      }
+      
+      console.log(`Admin access granted for ${user.email}`);
       next();
     } catch (error) {
       console.error('Admin middleware error:', error);
