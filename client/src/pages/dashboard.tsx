@@ -219,26 +219,27 @@ export default function Dashboard() {
         </div>
 
         {/* Well-being Check Section */}
-        <div className="grid lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-8">
           <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
+            <CardContent className="p-4 md:p-6">
+              <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
                 <div className="flex items-center">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                    <Heart className="w-6 h-6 text-green-500" />
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-green-100 rounded-full flex items-center justify-center">
+                    <Heart className="w-5 h-5 md:w-6 md:h-6 text-green-500" />
                   </div>
-                  <div className="ml-4">
-                    <h3 className="text-lg font-semibold text-gray-900">Well-being Check</h3>
-                    <p className="text-gray-600">
+                  <div className="ml-3 md:ml-4">
+                    <h3 className="text-base md:text-lg font-semibold text-gray-900">Well-being Check</h3>
+                    <p className="text-sm md:text-base text-gray-600">
                       Your next check is scheduled based on your {user?.alertFrequency || 'daily'} frequency
                     </p>
                   </div>
                 </div>
-                <div className="flex space-x-3">
+                <div className="flex flex-col space-y-2 md:flex-row md:space-y-0 md:space-x-3">
                   <Button 
                     onClick={() => wellBeingMutation.mutate()}
                     disabled={wellBeingMutation.isPending}
-                    className="bg-green-500 hover:bg-green-600 text-white"
+                    className="bg-green-500 hover:bg-green-600 text-white text-sm md:text-base"
+                    size="sm"
                   >
                     <Heart className="w-4 h-4 mr-2" />
                     {wellBeingMutation.isPending ? "Confirming..." : "I'm Okay"}
@@ -246,6 +247,8 @@ export default function Dashboard() {
                   <Button 
                     variant="outline"
                     onClick={() => setLocation("/well-being-settings")}
+                    size="sm"
+                    className="text-sm md:text-base"
                   >
                     Configure
                   </Button>
@@ -256,8 +259,6 @@ export default function Dashboard() {
           
           {/* Mood Tracker */}
           <MoodTracker compact={true} />
-
-
         </div>
 
         {/* Well-being Check Alert - Only show when needed */}
@@ -269,7 +270,7 @@ export default function Dashboard() {
         )}
 
         {/* Recent Assets and Nominees */}
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -284,26 +285,28 @@ export default function Dashboard() {
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+            <CardContent className="p-4 md:p-6">
+              <div className="space-y-3 md:space-y-4">
                 {stats?.recentAssets?.map((asset) => (
                   <AssetCard key={asset.id} asset={asset} />
                 )) || (
-                  <p className="text-gray-500 text-center py-8">No assets added yet</p>
+                  <p className="text-gray-500 text-center py-6 md:py-8 text-sm md:text-base">No assets added yet</p>
                 )}
-                <div className="flex space-x-2">
+                <div className="flex flex-col space-y-2 md:flex-row md:space-y-0 md:space-x-2">
                   <Button 
-                    className="flex-1" 
+                    className="flex-1 text-sm md:text-base" 
                     variant="outline"
                     onClick={() => setLocation("/assets")}
+                    size="sm"
                   >
                     <Coins className="w-4 h-4 mr-2" />
                     View Portfolio
                   </Button>
                   <Button 
-                    className="flex-1" 
+                    className="flex-1 text-sm md:text-base" 
                     variant="outline"
                     onClick={() => setLocation("/add-asset")}
+                    size="sm"
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Add Asset
@@ -327,16 +330,17 @@ export default function Dashboard() {
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+            <CardContent className="p-4 md:p-6">
+              <div className="space-y-3 md:space-y-4">
                 {stats?.nominees?.map((nominee) => (
                   <NomineeCard key={nominee.id} nominee={nominee} />
                 )) || (
-                  <p className="text-gray-500 text-center py-8">No nominees added yet</p>
+                  <p className="text-gray-500 text-center py-6 md:py-8 text-sm md:text-base">No nominees added yet</p>
                 )}
                 <Button 
-                  className="w-full bg-green-500 hover:bg-green-600"
+                  className="w-full bg-green-500 hover:bg-green-600 text-sm md:text-base"
                   onClick={() => setLocation("/add-nominee")}
+                  size="sm"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Nominee

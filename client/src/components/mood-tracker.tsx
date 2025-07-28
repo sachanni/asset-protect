@@ -92,22 +92,22 @@ export default function MoodTracker({ compact = false }: MoodTrackerProps) {
   if (compact && !isExpanded) {
     return (
       <Card className="hover-lift border-0 shadow-lg bg-white/70 backdrop-blur-sm">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
+        <CardContent className="p-4 md:p-6">
+          <div className="flex flex-col space-y-3 md:flex-row md:items-center md:justify-between md:space-y-0">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full flex items-center justify-center">
-                <Heart className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full flex items-center justify-center">
+                <Heart className="w-4 h-4 md:w-5 md:h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">Quick Mood Check</h3>
-                <p className="text-sm text-gray-500">How are you feeling?</p>
+                <h3 className="text-sm md:text-base font-semibold text-gray-900">Quick Mood Check</h3>
+                <p className="text-xs md:text-sm text-gray-500">How are you feeling?</p>
               </div>
             </div>
             <Button
               onClick={() => setIsExpanded(true)}
               variant="outline"
               size="sm"
-              className="bg-gradient-to-r from-pink-50 to-purple-50 border-pink-200 hover:from-pink-100 hover:to-purple-100"
+              className="bg-gradient-to-r from-pink-50 to-purple-50 border-pink-200 hover:from-pink-100 hover:to-purple-100 text-xs md:text-sm w-full md:w-auto"
             >
               <Smile className="w-4 h-4 mr-2" />
               Track Mood
@@ -146,7 +146,7 @@ export default function MoodTracker({ compact = false }: MoodTrackerProps) {
           <Label className="text-sm font-medium text-gray-700 mb-3 block">
             How are you feeling?
           </Label>
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 md:gap-3">
             {moodOptions.map((mood) => (
               <button
                 key={mood.id}
