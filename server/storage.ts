@@ -7,7 +7,9 @@ import {
   adminActions,
   adminLogs,
   moodEntries,
-
+  soundLibrary,
+  userSoundHistory,
+  soundPlaylists,
   activityLogs,
   userRiskAssessments,
   type User,
@@ -24,7 +26,12 @@ import {
   type InsertAdminLog,
   type MoodEntry,
   type InsertMoodEntry,
-
+  type SoundLibrary,
+  type InsertSoundLibrary,
+  type UserSoundHistory,
+  type InsertUserSoundHistory,
+  type SoundPlaylist,
+  type InsertSoundPlaylist,
   type ActivityLog,
   type InsertActivityLog,
   type UserRiskAssessment,
@@ -84,7 +91,24 @@ export interface IStorage {
   getUserMoodEntries(userId: string, limit?: number): Promise<MoodEntry[]>;
   getUserLatestMood(userId: string): Promise<MoodEntry | undefined>;
 
-
+  // Sound library methods
+  getAllSounds(): Promise<SoundLibrary[]>;
+  getSoundById(soundId: string): Promise<SoundLibrary | undefined>;
+  getSoundsByCategory(category: string): Promise<SoundLibrary[]>;
+  getSoundsByMood(mood: string): Promise<SoundLibrary[]>;
+  createSound(sound: InsertSoundLibrary): Promise<SoundLibrary>;
+  
+  // User sound history methods
+  recordSoundPlay(history: InsertUserSoundHistory): Promise<UserSoundHistory>;
+  getUserSoundHistory(userId: string, limit?: number): Promise<UserSoundHistory[]>;
+  toggleSoundFavorite(userId: string, soundId: string): Promise<void>;
+  rateSoundEntry(userId: string, soundId: string, rating: number): Promise<void>;
+  getUserFavoriteSounds(userId: string): Promise<SoundLibrary[]>;
+  
+  // Sound playlist methods
+  getPlaylistsByMood(mood: string): Promise<SoundPlaylist[]>;
+  createPlaylist(playlist: InsertSoundPlaylist): Promise<SoundPlaylist>;
+  getRecommendedSoundsForUser(userId: string): Promise<SoundLibrary[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -380,7 +404,177 @@ export class DatabaseStorage implements IStorage {
       .limit(limit);
   }
 
+  // Sound library methods
+  async getAllSounds(): Promise<SoundLibrary[]> {
+    return await db.select().from(soundLibrary).orderBy(desc(soundLibrary.createdAt));
+  }
 
+  async getSoundById(soundId: string): Promise<SoundLibrary | undefined> {
+    const [sound] = await db.select().from(soundLibrary).where(eq(soundLibrary.id, soundId));
+    return sound;
+  }
+
+  async getSoundsByCategory(category: string): Promise<SoundLibrary[]> {
+    return await db.select().from(soundLibrary).where(eq(soundLibrary.category, category));
+  }
+
+  async getSoundsByMood(mood: string): Promise<SoundLibrary[]> {
+    return await db.select().from(soundLibrary).where(sql`${mood} = ANY(${soundLibrary.moodTags})`);
+  }
+
+  async createSound(sound: InsertSoundLibrary): Promise<SoundLibrary> {
+    const [newSound] = await db.insert(soundLibrary).values({
+      ...sound,
+      id: nanoid(),
+    }).returning();
+    return newSound;
+  }
+
+  // User sound history methods
+  async recordSoundPlay(history: InsertUserSoundHistory): Promise<UserSoundHistory> {
+    const [newHistory] = await db.insert(userSoundHistory).values({
+      ...history,
+      id: nanoid(),
+    }).returning();
+    return newHistory;
+  }
+
+  async getUserSoundHistory(userId: string, limit: number = 50): Promise<UserSoundHistory[]> {
+    return await db
+      .select()
+      .from(userSoundHistory)
+      .where(eq(userSoundHistory.userId, userId))
+      .orderBy(desc(userSoundHistory.playedAt))
+      .limit(limit);
+  }
+
+  async toggleSoundFavorite(userId: string, soundId: string): Promise<void> {
+    // First check if there's an existing history entry
+    const [existingHistory] = await db
+      .select()
+      .from(userSoundHistory)
+      .where(
+        and(
+          eq(userSoundHistory.userId, userId),
+          eq(userSoundHistory.soundId, soundId)
+        )
+      )
+      .orderBy(desc(userSoundHistory.playedAt))
+      .limit(1);
+
+    if (existingHistory) {
+      // Update the existing entry
+      await db
+        .update(userSoundHistory)
+        .set({ isFavorite: !existingHistory.isFavorite })
+        .where(eq(userSoundHistory.id, existingHistory.id));
+    } else {
+      // Create a new history entry with favorite status
+      await db.insert(userSoundHistory).values({
+        id: nanoid(),
+        userId,
+        soundId,
+        isFavorite: true,
+      });
+    }
+  }
+
+  async rateSoundEntry(userId: string, soundId: string, rating: number): Promise<void> {
+    // First check if there's an existing history entry
+    const [existingHistory] = await db
+      .select()
+      .from(userSoundHistory)
+      .where(
+        and(
+          eq(userSoundHistory.userId, userId),
+          eq(userSoundHistory.soundId, soundId)
+        )
+      )
+      .orderBy(desc(userSoundHistory.playedAt))
+      .limit(1);
+
+    if (existingHistory) {
+      // Update the existing entry
+      await db
+        .update(userSoundHistory)
+        .set({ rating })
+        .where(eq(userSoundHistory.id, existingHistory.id));
+    } else {
+      // Create a new history entry with rating
+      await db.insert(userSoundHistory).values({
+        id: nanoid(),
+        userId,
+        soundId,
+        rating,
+      });
+    }
+  }
+
+  async getUserFavoriteSounds(userId: string): Promise<SoundLibrary[]> {
+    const favoriteSounds = await db
+      .select({
+        sound: soundLibrary,
+      })
+      .from(userSoundHistory)
+      .innerJoin(soundLibrary, eq(userSoundHistory.soundId, soundLibrary.id))
+      .where(
+        and(
+          eq(userSoundHistory.userId, userId),
+          eq(userSoundHistory.isFavorite, true)
+        )
+      )
+      .orderBy(desc(userSoundHistory.playedAt));
+
+    return favoriteSounds.map(f => f.sound);
+  }
+
+  // Sound playlist methods
+  async getPlaylistsByMood(mood: string): Promise<SoundPlaylist[]> {
+    return await db
+      .select()
+      .from(soundPlaylists)
+      .where(eq(soundPlaylists.moodContext, mood));
+  }
+
+  async createPlaylist(playlist: InsertSoundPlaylist): Promise<SoundPlaylist> {
+    const [newPlaylist] = await db.insert(soundPlaylists).values({
+      ...playlist,
+      id: nanoid(),
+    }).returning();
+    return newPlaylist;
+  }
+
+  async getRecommendedSoundsForUser(userId: string): Promise<SoundLibrary[]> {
+    // Get user's recent mood
+    const recentMood = await this.getUserLatestMood(userId);
+    
+    if (!recentMood) {
+      // Return general relaxation sounds if no mood data
+      return await this.getSoundsByCategory('ambient');
+    }
+
+    // Get sounds that match the user's current mood
+    const moodBasedSounds = await this.getSoundsByMood(recentMood.mood.toLowerCase());
+    
+    if (moodBasedSounds.length > 0) {
+      return moodBasedSounds.slice(0, 6); // Return top 6 recommendations
+    }
+
+    // Fallback to category-based recommendations
+    const categoryMapping: { [key: string]: string } = {
+      'stressed': 'meditation',
+      'anxious': 'meditation', 
+      'tired': 'sleep',
+      'sad': 'ambient',
+      'angry': 'nature',
+      'happy': 'focus',
+      'calm': 'ambient',
+      'excited': 'focus'
+    };
+
+    const category = categoryMapping[recentMood.mood.toLowerCase()] || 'ambient';
+    return await this.getSoundsByCategory(category);
+  }
 
   // New admin methods for comprehensive user management and monitoring
   async updateUserStatus(userId: string, status: string, adminId: string, reason?: string): Promise<void> {

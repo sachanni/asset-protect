@@ -495,6 +495,109 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Sound library routes
+  app.get('/api/sounds', combinedAuth, async (req: any, res) => {
+    try {
+      const { category, mood } = req.query;
+      
+      let sounds;
+      if (category) {
+        sounds = await storage.getSoundsByCategory(category);
+      } else if (mood) {
+        sounds = await storage.getSoundsByMood(mood);
+      } else {
+        sounds = await storage.getAllSounds();
+      }
+      
+      res.json(sounds);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch sounds", error: error.message });
+    }
+  });
+
+  app.get('/api/sounds/recommendations', combinedAuth, async (req: any, res) => {
+    try {
+      const userId = req.userId;
+      const recommendations = await storage.getRecommendedSoundsForUser(userId);
+      res.json(recommendations);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch sound recommendations", error: error.message });
+    }
+  });
+
+  app.get('/api/sounds/favorites', combinedAuth, async (req: any, res) => {
+    try {
+      const userId = req.userId;
+      const favorites = await storage.getUserFavoriteSounds(userId);
+      res.json(favorites);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch favorite sounds", error: error.message });
+    }
+  });
+
+  app.post('/api/sounds/play', combinedAuth, async (req: any, res) => {
+    try {
+      const userId = req.userId;
+      const { soundId, playDuration } = req.body;
+
+      const history = await storage.recordSoundPlay({
+        userId,
+        soundId,
+        playDuration: playDuration || null,
+      });
+
+      res.json({ success: true, history });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to record sound play", error: error.message });
+    }
+  });
+
+  app.post('/api/sounds/:soundId/favorite', combinedAuth, async (req: any, res) => {
+    try {
+      const userId = req.userId;
+      const { soundId } = req.params;
+
+      await storage.toggleSoundFavorite(userId, soundId);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to toggle favorite", error: error.message });
+    }
+  });
+
+  app.post('/api/sounds/:soundId/rate', combinedAuth, async (req: any, res) => {
+    try {
+      const userId = req.userId;
+      const { soundId } = req.params;
+      const { rating } = req.body;
+
+      await storage.rateSoundEntry(userId, soundId, rating);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to rate sound", error: error.message });
+    }
+  });
+
+  app.get('/api/sounds/history', combinedAuth, async (req: any, res) => {
+    try {
+      const userId = req.userId;
+      const limit = parseInt(req.query.limit as string) || 50;
+      const history = await storage.getUserSoundHistory(userId, limit);
+      res.json(history);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch sound history", error: error.message });
+    }
+  });
+
+  app.get('/api/playlists/:mood', combinedAuth, async (req: any, res) => {
+    try {
+      const { mood } = req.params;
+      const playlists = await storage.getPlaylistsByMood(mood);
+      res.json(playlists);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch playlists", error: error.message });
+    }
+  });
+
   // Admin routes
   app.get('/api/admin/stats', combinedAuth, async (req: any, res) => {
     try {
