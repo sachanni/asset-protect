@@ -1,7 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { connectMongoDB } from "./mongodb";
+// No need to initialize database - Drizzle handles it automatically
 
 const app = express();
 app.use(express.json());
@@ -52,8 +52,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Connect to MongoDB
-  await connectMongoDB();
+  // PostgreSQL database is ready via Drizzle ORM
   
   const server = await registerRoutes(app);
 

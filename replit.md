@@ -23,15 +23,15 @@ Preferred communication style: Simple, everyday language.
 - **Runtime**: Node.js with Express.js
 - **Language**: TypeScript with ES modules
 - **Authentication**: Replit Auth with OpenID Connect
-- **Session Management**: Express sessions with MongoDB storage
-- **Database ODM**: Mongoose ODM with schema validation and type safety
+- **Session Management**: Express sessions with PostgreSQL storage
+- **Database ORM**: Drizzle ORM with type-safe queries
 - **Password Hashing**: bcrypt for secure password storage
 
 ### Data Storage Solutions
-- **Primary Database**: MongoDB with Mongoose ODM for flexible document storage
-- **Session Storage**: MongoDB collection for session persistence
+- **Primary Database**: PostgreSQL (configured for Neon serverless)
+- **Session Storage**: PostgreSQL table for session persistence
 - **Asset Storage**: Configurable (Google Drive, DigiLocker, or local server)
-- **Schema Management**: Mongoose schemas with automatic validation
+- **Schema Management**: Drizzle migrations with version control
 
 ### Authentication and Authorization
 - **Primary Auth**: Replit Auth for seamless integration

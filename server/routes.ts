@@ -2,37 +2,9 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-// Using MongoDB schema types now
-import type { InsertUser, InsertNominee, InsertMoodEntry } from "@shared/mongodb-schema";
+import { insertUserSchema, insertNomineeSchema, insertMoodEntrySchema } from "@shared/schema";
 import { z } from "zod";
 import bcrypt from "bcrypt";
-
-// Zod validation schemas
-const insertUserSchema = z.object({
-  fullName: z.string().min(2),
-  dateOfBirth: z.date(),
-  mobileNumber: z.string().min(10),
-  countryCode: z.string().default('+91'),
-  address: z.string().min(10),
-  email: z.string().email(),
-  passwordHash: z.string(),
-});
-
-const insertNomineeSchema = z.object({
-  userId: z.string(),
-  fullName: z.string().min(2),
-  relationship: z.string(),
-  mobileNumber: z.string().min(10),
-  email: z.string().email().optional(),
-  isVerified: z.boolean().default(false),
-});
-
-const insertMoodEntrySchema = z.object({
-  userId: z.string(),
-  mood: z.string(),
-  emoji: z.string(),
-  notes: z.string().optional(),
-});
 
 // Extend session type to include custom properties
 declare module 'express-session' {
