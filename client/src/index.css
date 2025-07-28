@@ -132,6 +132,19 @@
     0%, 100% { opacity: 1; }
     50% { opacity: 0.8; }
   }
+
+  /* Dashboard tab content isolation to prevent duplication */
+  .dashboard-content,
+  .assets-content,
+  .nominees-content,
+  .settings-content {
+    position: relative;
+    width: 100%;
+    min-height: 400px;
+    z-index: 1;
+    display: block;
+    clear: both;
+  }
 }
 
 /* Add primary color utilities for compatibility */

@@ -120,23 +120,28 @@ export default function Dashboard() {
   const showWellBeingAlert = stats && stats.wellBeingCounter > 10;
 
   function renderContent() {
-    switch (activeTab) {
-      case "dashboard":
-        return renderDashboard();
-      case "assets":
-        return renderAssets();
-      case "nominees":
-        return renderNominees();
-      case "settings":    
-        return renderSettings();
-      default:
-        return renderDashboard();
-    }
+    // Clear any potential layout issues by ensuring only one tab content is rendered
+    const tabContent = (() => {
+      switch (activeTab) {
+        case "dashboard":
+          return renderDashboard();
+        case "assets":
+          return renderAssets();
+        case "nominees":
+          return renderNominees();
+        case "settings":    
+          return renderSettings();
+        default:
+          return renderDashboard();
+      }
+    })();
+    
+    return <div key={activeTab} className="w-full">{tabContent}</div>;
   }
 
   function renderDashboard() {
     return (
-      <>
+      <div className="dashboard-content">
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -362,7 +367,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
-      </>
+      </div>
     );
   }
 
@@ -370,9 +375,9 @@ export default function Dashboard() {
 
   function renderAssets() {
     return (
-      <div>
+      <div className="assets-content">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Assets</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Assets Portfolio</h1>
           <p className="text-gray-600">Manage your digital assets</p>
         </div>
         
@@ -403,9 +408,9 @@ export default function Dashboard() {
 
   function renderNominees() {
     return (
-      <div>
+      <div className="nominees-content">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Nominees</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Nominees Management</h1>
           <p className="text-gray-600">Manage your nominated family members</p>
         </div>
         
@@ -442,9 +447,9 @@ export default function Dashboard() {
 
   function renderSettings() {
     return (
-      <div>
+      <div className="settings-content">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Settings</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Account Settings</h1>
           <p className="text-gray-600">Configure your account and preferences</p>
         </div>
         <div className="grid gap-6 max-w-2xl">
@@ -492,8 +497,8 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md shadow-sm border-b border-white/20" id="main-dashboard-header">
+      {/* Header - ensure no duplication */}
+      <header className="bg-white/80 backdrop-blur-md shadow-sm border-b border-white/20 relative z-10" id="main-dashboard-header">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
@@ -590,7 +595,9 @@ export default function Dashboard() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {renderContent()}
+        <div className="relative">
+          {renderContent()}
+        </div>
       </main>
     </div>
   );
