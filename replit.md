@@ -110,6 +110,9 @@ Preferred communication style: Simple, everyday language.
   - Admin credentials: admin@aulnovatechsoft.com / Admin@123
   - Admin login automatically redirects to /admin-panel
   - Removed admin panel button from regular user dashboard
+- **MongoDB Casting Errors**: Fixed ObjectId casting failures for admin user by adding admin checks in storage methods
+  - Admin user now returns empty arrays for nominees, assets, mood entries, and wellbeing alerts
+  - Eliminates database errors when admin accesses system endpoints
 
 ## Data Flow
 

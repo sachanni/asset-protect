@@ -177,6 +177,10 @@ export class MongoStorage implements IStorage {
   }
 
   async getNomineesByUserId(userId: string): Promise<NomineeType[]> {
+    // Admin user has no nominees
+    if (userId === "admin") {
+      return [];
+    }
     return await Nominee.find({ userId });
   }
 
@@ -201,6 +205,10 @@ export class MongoStorage implements IStorage {
   }
 
   async getAssetsByUserId(userId: string): Promise<AssetType[]> {
+    // Admin user has no assets
+    if (userId === "admin") {
+      return [];
+    }
     return await Asset.find({ userId });
   }
 
@@ -221,10 +229,18 @@ export class MongoStorage implements IStorage {
   }
 
   async getMoodEntriesByUserId(userId: string): Promise<MoodEntryType[]> {
+    // Admin user has no mood entries
+    if (userId === "admin") {
+      return [];
+    }
     return await MoodEntry.find({ userId }).sort({ createdAt: -1 });
   }
 
   async getRecentMoodEntries(userId: string, limit: number = 10): Promise<MoodEntryType[]> {
+    // Admin user has no mood entries
+    if (userId === "admin") {
+      return [];
+    }
     return await MoodEntry.find({ userId })
       .sort({ createdAt: -1 })
       .limit(limit);
@@ -248,6 +264,10 @@ export class MongoStorage implements IStorage {
 
   // Well Being Alert operations
   async getWellBeingAlerts(userId?: string): Promise<WellBeingAlertType[]> {
+    // Admin user has no wellbeing alerts
+    if (userId === "admin") {
+      return [];
+    }
     const query = userId ? { userId } : {};
     return await WellBeingAlert.find(query);
   }
