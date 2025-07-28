@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, TrendingUp, BarChart3, Activity, Heart, Smile, Zap, Sparkles, Brain } from "lucide-react";
-import EmotionalInsightsOverlay from "@/components/emotional-insights-overlay";
+import { Calendar, TrendingUp, BarChart3, Activity, Heart, Smile, Zap } from "lucide-react";
+// Removed AI Emotional Insights feature per user request
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -84,7 +84,7 @@ interface MoodStats {
 export default function WellnessDashboard() {
   const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d" | "1y">("30d");
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
-  const [showInsightsOverlay, setShowInsightsOverlay] = useState(false);
+  // Removed AI Emotional Insights overlay state per user request
 
   // Fetch mood entries
   const { data: moodEntries = [], isLoading } = useQuery<MoodEntry[]>({
@@ -140,15 +140,6 @@ export default function WellnessDashboard() {
           <p className="text-lg text-gray-600 dark:text-gray-300">
             Track your emotional journey and discover patterns in your wellbeing
           </p>
-          <div className="mt-6">
-            <Button
-              onClick={() => setShowInsightsOverlay(true)}
-              className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-2"
-            >
-              <Sparkles className="w-5 h-5" />
-              <span>AI Emotional Insights</span>
-            </Button>
-          </div>
         </motion.div>
 
         {/* Time Range Selector */}
@@ -416,11 +407,7 @@ export default function WellnessDashboard() {
         </motion.div>
       </div>
       
-      {/* AI Emotional Insights Overlay */}
-      <EmotionalInsightsOverlay 
-        isOpen={showInsightsOverlay}
-        onClose={() => setShowInsightsOverlay(false)}
-      />
+      {/* AI Emotional Insights feature removed per user request */}
     </div>
   );
 }

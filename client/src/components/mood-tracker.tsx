@@ -44,7 +44,7 @@ export default function MoodTracker({ compact = false }: MoodTrackerProps) {
   const queryClient = useQueryClient();
 
   const saveMoodMutation = useMutation({
-    mutationFn: async (data: { mood: string; emoji: string; notes?: string }) => {
+    mutationFn: async (data: { mood: string; intensity: number; notes?: string }) => {
       const response = await apiRequest('POST', '/api/mood', data);
       return response.json();
     },
@@ -74,9 +74,27 @@ export default function MoodTracker({ compact = false }: MoodTrackerProps) {
       // Quick save for compact mode without notes
       saveMoodMutation.mutate({
         mood: mood.label,
-        emoji: mood.emoji,
+        intensity: getMoodIntensity(mood.id),
       });
     }
+  };
+
+  const getMoodIntensity = (moodId: string): number => {
+    const intensityMap: Record<string, number> = {
+      'amazing': 10,
+      'happy': 8,
+      'excited': 9,
+      'good': 7,
+      'calm': 6,
+      'grateful': 8,
+      'okay': 5,
+      'confused': 4,
+      'tired': 3,
+      'sad': 2,
+      'anxious': 3,
+      'stressed': 2,
+    };
+    return intensityMap[moodId] || 5;
   };
 
   const handleSave = () => {
@@ -84,7 +102,7 @@ export default function MoodTracker({ compact = false }: MoodTrackerProps) {
     
     saveMoodMutation.mutate({
       mood: selectedMood.label,
-      emoji: selectedMood.emoji,
+      intensity: getMoodIntensity(selectedMood.id),
       notes: notes.trim() || undefined,
     });
   };
