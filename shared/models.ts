@@ -10,6 +10,16 @@ export interface IUser extends Document {
   email: string;
   password: string;
   isVerified: boolean;
+  // Well-being settings
+  alertFrequency?: 'daily' | 'weekly' | 'custom';
+  customDays?: number;
+  alertTime?: string;
+  enableSMS?: boolean;
+  enableEmail?: boolean;
+  maxWellBeingLimit?: number;
+  escalationEnabled?: boolean;
+  lastWellBeingCheck?: Date;
+  wellBeingCounter?: number;
   createdAt: Date;
   updatedAt: Date;
 }

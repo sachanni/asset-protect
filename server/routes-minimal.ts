@@ -27,6 +27,16 @@ const loginSchema = z.object({
   otp: z.string().optional(),
 });
 
+const wellBeingSettingsSchema = z.object({
+  alertFrequency: z.enum(["daily", "weekly", "custom"]),
+  customDays: z.number().min(1).max(30).optional(),
+  alertTime: z.string(),
+  enableSMS: z.boolean(),
+  enableEmail: z.boolean(),
+  maxMissedAlerts: z.number().min(1).max(50),
+  escalationEnabled: z.boolean(),
+});
+
 declare module 'express-session' {
   interface SessionData {
     registrationStep1?: {
@@ -384,6 +394,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error generating mood recommendation:", error);
       res.status(500).json({ message: "Failed to generate mood recommendation" });
+    }
+  });
+
+  // Well-being settings routes
+  app.get("/api/wellbeing/settings", combinedAuth, async (req: any, res: Response) => {
+    try {
+      const user = await storage.getUserById(req.userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Return current user settings with defaults
+      const settings = {
+        alertFrequency: user.alertFrequency || 'daily',
+        customDays: user.customDays || 1,
+        alertTime: user.alertTime || '09:00',
+        enableSMS: user.enableSMS !== false,
+        enableEmail: user.enableEmail !== false,
+        maxMissedAlerts: user.maxWellBeingLimit || 15,
+        escalationEnabled: user.escalationEnabled !== false,
+      };
+      
+      res.json(settings);
+    } catch (error: any) {
+      console.error("Error fetching well-being settings:", error);
+      res.status(500).json({ message: "Failed to fetch settings" });
+    }
+  });
+
+  app.put("/api/wellbeing/settings", combinedAuth, async (req: any, res: Response) => {
+    try {
+      const settingsData = wellBeingSettingsSchema.parse(req.body);
+      
+      // Update user with well-being settings using direct MongoDB update
+      const user = await storage.getUserById(req.userId);
+      if (user) {
+        await storage.updateUser(req.userId, {
+          ...user,
+          alertFrequency: settingsData.alertFrequency,
+          customDays: settingsData.customDays,
+          alertTime: settingsData.alertTime,
+          enableSMS: settingsData.enableSMS,
+          enableEmail: settingsData.enableEmail,
+          maxWellBeingLimit: settingsData.maxMissedAlerts,
+          escalationEnabled: settingsData.escalationEnabled,
+        });
+      }
+      
+      res.json({ success: true, message: "Settings updated successfully" });
+    } catch (error: any) {
+      console.error("Error updating well-being settings:", error);
+      res.status(400).json({ message: "Failed to update settings", error: error.message });
+    }
+  });
+
+  app.post("/api/wellbeing/test-alert", combinedAuth, async (req: any, res: Response) => {
+    try {
+      const user = await storage.getUserById(req.userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Log the test alert (in real implementation, this would send SMS/Email)
+      console.log(`Test alert sent to user ${req.userId} (${user.email}, ${user.mobileNumber})`);
+      
+      res.json({ success: true, message: "Test alert sent successfully" });
+    } catch (error: any) {
+      console.error("Error sending test alert:", error);
+      res.status(500).json({ message: "Failed to send test alert" });
+    }
+  });
+
+  app.post("/api/wellbeing/confirm", combinedAuth, async (req: any, res: Response) => {
+    try {
+      // Update user well-being status using direct MongoDB update
+      const user = await storage.getUserById(req.userId);
+      if (user) {
+        await storage.updateUser(req.userId, {
+          ...user,
+          lastWellBeingCheck: new Date(),
+          wellBeingCounter: 0
+        });
+      }
+      
+      res.json({ success: true, message: "Well-being confirmed" });
+    } catch (error: any) {
+      console.error("Error confirming well-being:", error);
+      res.status(500).json({ message: "Failed to confirm well-being" });
     }
   });
 
