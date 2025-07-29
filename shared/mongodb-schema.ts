@@ -62,7 +62,7 @@ const userSchema = new Schema<IUser>({
   timestamps: true,
 });
 
-export const User = mongoose.model<IUser>('User', userSchema);
+export const User = mongoose.models.User || mongoose.model<IUser>('User', userSchema);
 
 // Session interface and schema (for Replit Auth)
 export interface ISession extends Document {
@@ -77,7 +77,7 @@ const sessionSchema = new Schema<ISession>({
   expire: { type: Date, required: true, index: true },
 });
 
-export const Session = mongoose.model<ISession>('Session', sessionSchema);
+export const Session = mongoose.models.Session || mongoose.model<ISession>('Session', sessionSchema);
 
 // Mood Entry interface and schema
 export interface IMoodEntry extends Document {
@@ -97,7 +97,7 @@ const moodEntrySchema = new Schema<IMoodEntry>({
   timestamps: true,
 });
 
-export const MoodEntry = mongoose.model<IMoodEntry>('MoodEntry', moodEntrySchema);
+export const MoodEntry = mongoose.models.MoodEntry || mongoose.model<IMoodEntry>('MoodEntry', moodEntrySchema);
 
 // Nominee interface and schema
 export interface INominee extends Document {
@@ -121,7 +121,7 @@ const nomineeSchema = new Schema<INominee>({
   timestamps: true,
 });
 
-export const Nominee = mongoose.model<INominee>('Nominee', nomineeSchema);
+export const Nominee = mongoose.models.Nominee || mongoose.model<INominee>('Nominee', nomineeSchema);
 
 // Asset interface and schema
 export interface IAsset extends Document {
@@ -152,7 +152,7 @@ const assetSchema = new Schema<IAsset>({
   timestamps: true,
 });
 
-export const Asset = mongoose.model<IAsset>('Asset', assetSchema);
+export const Asset = mongoose.models.Asset || mongoose.model<IAsset>('Asset', assetSchema);
 
 // Well-being Alert interface and schema
 export interface IWellBeingAlert extends Document {
@@ -174,7 +174,7 @@ const wellBeingAlertSchema = new Schema<IWellBeingAlert>({
   timestamps: true,
 });
 
-export const WellBeingAlert = mongoose.model<IWellBeingAlert>('WellBeingAlert', wellBeingAlertSchema);
+export const WellBeingAlert = mongoose.models.WellBeingAlert || mongoose.model<IWellBeingAlert>('WellBeingAlert', wellBeingAlertSchema);
 
 // Admin Action interface and schema
 export interface IAdminAction extends Document {
@@ -198,7 +198,7 @@ const adminActionSchema = new Schema<IAdminAction>({
   timestamps: true,
 });
 
-export const AdminAction = mongoose.model<IAdminAction>('AdminAction', adminActionSchema);
+export const AdminAction = mongoose.models.AdminAction || mongoose.model<IAdminAction>('AdminAction', adminActionSchema);
 
 // Activity Log interface and schema
 export interface IActivityLog extends Document {
@@ -228,7 +228,7 @@ const activityLogSchema = new Schema<IActivityLog>({
   timestamps: true,
 });
 
-export const ActivityLog = mongoose.model<IActivityLog>('ActivityLog', activityLogSchema);
+export const ActivityLog = mongoose.models.ActivityLog || mongoose.model<IActivityLog>('ActivityLog', activityLogSchema);
 
 // User Risk Assessment interface and schema
 export interface IUserRiskAssessment extends Document {
@@ -251,7 +251,7 @@ const userRiskAssessmentSchema = new Schema<IUserRiskAssessment>({
   timestamps: true,
 });
 
-export const UserRiskAssessment = mongoose.model<IUserRiskAssessment>('UserRiskAssessment', userRiskAssessmentSchema);
+export const UserRiskAssessment = mongoose.models.UserRiskAssessment || mongoose.model<IUserRiskAssessment>('UserRiskAssessment', userRiskAssessmentSchema);
 
 // Admin Log interface and schema
 export interface IAdminLog extends Document {
@@ -271,7 +271,7 @@ const adminLogSchema = new Schema<IAdminLog>({
   timestamps: true,
 });
 
-export const AdminLog = mongoose.model<IAdminLog>('AdminLog', adminLogSchema);
+export const AdminLog = mongoose.models.AdminLog || mongoose.model<IAdminLog>('AdminLog', adminLogSchema);
 
 // Type definitions for compatibility with existing code
 export type User = IUser;

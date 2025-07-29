@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI || process.env.REPLIT_DB_URL || 'mongodb://localhost:27017/wellness_legacy';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://aulnovayoutube:Slsqc4s1hJduBi6w@cluster0.tjzgtki.mongodb.net/Aulnovayoutube?retryWrites=true&w=majority';
 
 export async function connectToDatabase() {
   try {
