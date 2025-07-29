@@ -7,6 +7,7 @@ Your app is now ready to run locally without any Replit dependencies!
 1. **Install dependencies:**
    ```bash
    npm install
+   npm install cross-env
    ```
 
 2. **Create `.env` file:**

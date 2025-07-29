@@ -11,6 +11,7 @@
 2. **Install dependencies:**
    ```bash
    npm install
+   npm install cross-env
    ```
 
 3. **Environment Variables:**
