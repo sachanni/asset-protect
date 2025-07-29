@@ -107,7 +107,17 @@ Preferred communication style: Simple, everyday language.
 - **Application Status**: Successfully running on port 5000 with MongoDB Atlas connectivity
 - **Schema Setup**: All MongoDB document schemas properly configured and ready for use
 
-### Recent Issues Fixed ❌→✓ (July 28, 2025)
+### Recent Issues Fixed ❌→✓ (July 29, 2025)
+- **Admin Panel Statistics**: Fixed admin stats API endpoints showing 0 users despite registered users
+  - Added missing `getAllUsers()` and `getAdminStats()` methods to MongoDB storage class
+  - Added admin authentication middleware and routes to routes-minimal.ts
+  - Admin panel now correctly displays user counts, assets, nominees, and activity data
+- **Windows Compatibility**: Fixed NODE_ENV and server binding issues for local Windows development
+  - Updated server to use localhost instead of 0.0.0.0 in development mode
+  - Added cross-env package for Windows NODE_ENV support
+  - Disabled reusePort on Windows platform for proper server startup
+
+### Previous Issues Fixed ❌→✓ (July 28, 2025)
 - **Header Duplication**: Fixed duplicate "WellnessLegacy" headers on landing page using CSS isolation and hardware acceleration
 - **404 Routing Error**: Removed problematic catch-all routes that were causing NotFound component to render alongside main content on all pages
 - **Landing Page Display**: Clean rendering without visual duplicates or routing conflicts

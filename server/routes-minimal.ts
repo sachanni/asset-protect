@@ -566,5 +566,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin middleware to check if user is admin
+  const requireAdmin = async (req: any, res: any, next: any) => {
+    try {
+      // Check if user is authenticated via session
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      // Check for admin session
+      if (userId === "admin" && req.session?.isAdmin) {
+        // Set admin user on request for downstream use
+        req.user = { id: "admin", email: "admin@aulnovatechsoft.com", fullName: "System Administrator", isAdmin: true };
+        return next();
+      }
+      
+      return res.status(403).json({ message: "Admin access required" });
+    } catch (error) {
+      console.error('Admin middleware error:', error);
+      return res.status(500).json({ message: "Server error checking admin status" });
+    }
+  };
+
+  // Admin routes
+  app.get("/api/admin/stats", requireAdmin, async (req, res) => {
+    try {
+      const stats = await storage.getAdminStats();
+      res.json(stats);
+    } catch (error) {
+      console.error('Error getting admin stats:', error);
+      res.status(500).json({ error: "Failed to fetch admin stats" });
+    }
+  });
+
+  // Get all users for admin panel
+  app.get("/api/admin/users", requireAdmin, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      // Remove sensitive information
+      const safeUsers = users.map(u => ({
+        id: u._id,
+        email: u.email,
+        fullName: u.fullName,
+        accountStatus: u.accountStatus || 'active',
+        wellBeingCounter: u.wellBeingCounter || 0,
+        maxWellBeingLimit: u.maxWellBeingLimit || 15,
+        lastWellBeingCheck: u.lastWellBeingCheck,
+        lastLoginAt: u.lastLoginAt,
+        alertFrequency: u.alertFrequency || 'daily',
+        createdAt: u.createdAt,
+        isActive: u.isActive !== false
+      }));
+      res.json(safeUsers);
+    } catch (error) {
+      console.error('Error getting users:', error);
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  // Get activity logs for admin
+  app.get("/api/admin/activity-logs", requireAdmin, async (req, res) => {
+    try {
+      const logs = await storage.getActivityLogs({ limit: 100 });
+      res.json(logs);
+    } catch (error) {
+      console.error('Error getting activity logs:', error);
+      res.status(500).json({ error: "Failed to fetch activity logs" });
+    }
+  });
+
   return createServer(app);
 }

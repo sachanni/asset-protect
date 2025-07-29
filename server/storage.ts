@@ -311,6 +311,42 @@ export class MongoStorage implements IStorage {
     if (!action) throw new Error('Admin action not found');
     return action;
   }
+
+  // Admin-specific operations
+  async getAllUsers(): Promise<UserType[]> {
+    return await User.find({}).sort({ createdAt: -1 });
+  }
+
+  async getAdminStats() {
+    try {
+      // Get all users
+      const allUsers = await this.getAllUsers();
+      const totalUsers = allUsers.length;
+      const activeUsers = allUsers.filter(u => u.accountStatus === 'active').length;
+      const suspendedUsers = allUsers.filter(u => u.accountStatus === 'suspended').length;
+      const deactivatedUsers = allUsers.filter(u => u.accountStatus === 'inactive').length;
+
+      // Get other stats
+      const totalAssets = await Asset.countDocuments();
+      const totalNominees = await Nominee.countDocuments();
+      const usersAtRisk = await this.getUsersWithExceededLimits();
+      const recentActivities = await this.getActivityLogs({ limit: 10 });
+
+      return {
+        totalUsers,
+        activeUsers,
+        suspendedUsers,
+        deactivatedUsers,
+        totalAssets,
+        totalNominees,
+        usersAtRisk: usersAtRisk.length,
+        recentActivities
+      };
+    } catch (error) {
+      console.error('Error getting admin stats:', error);
+      throw error;
+    }
+  }
 }
 
 // Create singleton instance
