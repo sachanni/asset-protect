@@ -54,7 +54,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // PostgreSQL database is ready via Drizzle ORM
+  // MongoDB database connection is ready
   
   const server = await registerRoutes(app);
 
