@@ -56,3 +56,11 @@ set NODE_ENV=development && tsx server/index.ts
    ```
 
 Your app will run on `http://localhost:5000`
+
+## Common Windows Issues Fixed:
+
+✅ **NODE_ENV command not recognized** - Use cross-env  
+✅ **ENOTSUP listen error** - Server now uses localhost instead of 0.0.0.0 in development  
+✅ **Port binding issues** - Disabled reusePort on Windows  
+
+The app is now fully Windows-compatible!
