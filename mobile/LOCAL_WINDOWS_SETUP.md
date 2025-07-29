@@ -44,13 +44,14 @@ Open Command Prompt or PowerShell in your local directory:
 ```cmd
 cd D:\personal\aulnova\dev\repo-native\asset-protect\
 
-npx react-native init PosthumousNotificationApp --template react-native-template-typescript
+npx @react-native-community/cli@latest init PosthumousNotificationApp --template react-native-template-typescript
 
 cd PosthumousNotificationApp
 ```
 
-**If this fails, try:**
+**Alternative method if above fails:**
 ```cmd
+npm install -g @react-native-community/cli
 npx @react-native-community/cli init PosthumousNotificationApp --template react-native-template-typescript
 ```
 
