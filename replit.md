@@ -129,6 +129,8 @@ Preferred communication style: Simple, everyday language.
   - Integrated with existing Node.js/MongoDB backend via REST APIs
   - Provided comprehensive setup instructions and build processes
   - Ready for APK/IPA generation for app store distribution
+  - Created dependency conflict resolution guides for React Native CLI issues
+  - Provided Expo alternative setup for easier APK generation without conflicts
 
 ### Previous Issues Fixed ❌→✓ (July 28, 2025)
 - **Header Duplication**: Fixed duplicate "WellnessLegacy" headers on landing page using CSS isolation and hardware acceleration
