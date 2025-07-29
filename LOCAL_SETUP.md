@@ -32,21 +32,28 @@
    npm uninstall openid-client passport passport-local memoizee
    ```
 
-5. **Update package.json scripts (if needed):**
-   The current scripts should work fine:
+5. **Update package.json scripts for Windows compatibility:**
+   Update the scripts section in package.json to:
    ```json
    {
      "scripts": {
-       "dev": "NODE_ENV=development tsx server/index.ts",
+       "dev": "cross-env NODE_ENV=development tsx server/index.ts",
        "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
-       "start": "NODE_ENV=production node dist/index.js"
+       "start": "cross-env NODE_ENV=production node dist/index.js"
      }
    }
    ```
 
 6. **Start the application:**
+   
+   **Option A - Using npm script (after updating package.json):**
    ```bash
    npm run dev
+   ```
+   
+   **Option B - Direct command (works immediately):**
+   ```bash
+   npx cross-env NODE_ENV=development tsx server/index.ts
    ```
 
 ## Key Changes Made for Local Development

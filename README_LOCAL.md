@@ -16,9 +16,18 @@ Your app is now ready to run locally without any Replit dependencies!
    Then edit `.env` with your MongoDB connection string (already included).
 
 3. **Start the app:**
+   
+   **For Windows users:**
+   ```bash
+   npx cross-env NODE_ENV=development tsx server/index.ts
+   ```
+   
+   **For Mac/Linux users:**
    ```bash
    npm run dev
    ```
+   
+   (Or update package.json scripts to use cross-env for cross-platform compatibility)
 
 The app will run on `http://localhost:5000`
 
