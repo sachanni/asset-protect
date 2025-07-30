@@ -1,109 +1,135 @@
-# Mobile App Files to Copy
+# Files to Copy to Your Expo Project
 
-Since you're setting up React Native on your local Windows machine, you'll need to manually copy these files from this Replit project to your local PosthumousNotificationApp project.
+## The Error You're Seeing
+`Unable to resolve "../screens/main/NomineesScreen"` means the screen files weren't copied to your Expo project.
 
-## File Structure to Create
+## Copy These Files Exactly
 
+From this Replit `mobile/` folder to your `PosthumousNotificationApp/` folder:
+
+### 1. Main App File
 ```
-PosthumousNotificationApp/
-├── App.tsx (replace default)
-└── src/
-    ├── context/
-    │   ├── AuthContext.tsx
-    │   └── ApiContext.tsx
-    ├── services/
-    │   └── api.ts
-    ├── navigation/
-    │   ├── AuthNavigator.tsx
-    │   └── MainNavigator.tsx
-    ├── hooks/
-    │   └── useAuth.ts
-    ├── screens/
-    │   ├── LoadingScreen.tsx
-    │   ├── auth/
-    │   │   ├── WelcomeScreen.tsx
-    │   │   ├── LoginScreen.tsx
-    │   │   └── RegisterScreen.tsx
-    │   └── main/
-    │       ├── DashboardScreen.tsx
-    │       ├── ProfileScreen.tsx
-    │       ├── AssetsScreen.tsx
-    │       └── AddAssetScreen.tsx
+mobile/App.tsx → PosthumousNotificationApp/App.tsx
 ```
 
-## How to Copy Files
+### 2. Source Folder Structure
+Copy the entire `src` folder:
+```
+mobile/src/ → PosthumousNotificationApp/src/
 
-### Method 1: Manual Copy (Recommended)
-1. Open each file in this Replit project (click on the file in the file explorer)
-2. Copy the entire content
-3. Create the corresponding file in your local React Native project
-4. Paste the content
+This includes all these files:
+├── src/
+│   ├── context/
+│   │   ├── AuthContext.tsx
+│   │   └── ApiContext.tsx
+│   ├── services/
+│   │   └── api.ts
+│   ├── navigation/
+│   │   ├── AuthNavigator.tsx
+│   │   └── MainNavigator.tsx
+│   ├── hooks/
+│   │   └── useAuth.ts
+│   ├── screens/
+│   │   ├── LoadingScreen.tsx
+│   │   ├── auth/
+│   │   │   ├── WelcomeScreen.tsx
+│   │   │   ├── LoginScreen.tsx
+│   │   │   └── RegisterScreen.tsx
+│   │   └── main/
+│   │       ├── DashboardScreen.tsx
+│   │       ├── AssetsScreen.tsx
+│   │       ├── NomineesScreen.tsx
+│   │       ├── MoodTrackingScreen.tsx
+│   │       ├── AdminPanelScreen.tsx
+│   │       ├── ProfileScreen.tsx
+│   │       ├── AddAssetScreen.tsx
+│   │       ├── AddNomineeScreen.tsx
+│   │       └── WellnessSettingsScreen.tsx
+```
 
-### Method 2: Download Files
-1. Right-click each file in this Replit project
-2. Select "Download" (if available)
-3. Save to your local project structure
+## After Copying Files
 
-## Critical File to Update
-
-**IMPORTANT:** After copying `src/services/api.ts`, update the IP address:
-
+### 3. Update MainNavigator.tsx
+In `src/navigation/MainNavigator.tsx`, change line 4:
 ```typescript
-// Change this line in api.ts:
+// Change from:
+import Icon from 'react-native-vector-icons/MaterialIcons';
+
+// Change to:
+import { MaterialIcons } from '@expo/vector-icons';
+
+// Also update the TabIcon function (around line 100):
+function TabIcon({ iconName, size = 24, color }: { iconName: string, size?: number, color: string }) {
+  return <MaterialIcons name={iconName as any} size={size} color={color} />;
+}
+```
+
+### 4. Update API Configuration
+In `src/services/api.ts`, change line 2:
+```typescript
+// Find your Windows IP: ipconfig | findstr "IPv4"
+
+// Change from:
 const API_BASE_URL = 'http://localhost:5000';
 
-// To your Windows machine's IP address:
-const API_BASE_URL = 'http://192.168.1.XXX:5000'; // Your actual IP
+// Change to:
+const API_BASE_URL = 'http://192.168.1.33:5000'; // Your IP shown in Expo
 ```
 
-Find your IP with: `ipconfig | findstr "IPv4"`
+## How to Copy Files on Windows
 
-## Files Summary
+### Option 1: File Explorer
+1. Open two File Explorer windows
+2. Navigate to this Replit project's mobile folder in one window
+3. Navigate to your `D:\personal\aulnova\dev\repo-native\asset-protect\PosthumousNotificationApp\` in the other
+4. Copy and paste the files
 
-### Core Files (must copy):
-1. **App.tsx** - Main app component with navigation
-2. **AuthContext.tsx** - Authentication state management
-3. **api.ts** - Backend API communication
-4. **AuthNavigator.tsx** - Authentication flow navigation
-5. **MainNavigator.tsx** - Main app navigation with tabs
+### Option 2: Command Line
+```powershell
+# Navigate to your project
+cd D:\personal\aulnova\dev\repo-native\asset-protect\PosthumousNotificationApp
 
-### Screen Files:
-6. **WelcomeScreen.tsx** - App introduction screen
-7. **LoginScreen.tsx** - User login screen
-8. **RegisterScreen.tsx** - User registration screen
-9. **DashboardScreen.tsx** - Main dashboard with stats
-10. **ProfileScreen.tsx** - User profile management
-
-### Additional Features:
-11. **AssetsScreen.tsx** - Asset management list
-12. **AddAssetScreen.tsx** - Add new asset form
-13. **LoadingScreen.tsx** - Loading state component
-
-## Order of Operations
-
-1. **First:** Copy core files (App.tsx, contexts, services)
-2. **Second:** Copy navigation files
-3. **Third:** Copy screen files
-4. **Fourth:** Update API configuration with your IP
-5. **Fifth:** Test the app
-
-## Dependencies Required
-
-Make sure you've installed all dependencies in your local project:
-
-```cmd
-npm install @react-navigation/native @react-navigation/stack @react-navigation/bottom-tabs react-native-screens react-native-safe-area-context react-native-gesture-handler react-native-reanimated @react-native-async-storage/async-storage react-native-vector-icons react-hook-form
+# You'll need to manually download/copy the files from this Replit project
 ```
 
-## Expected Features After Setup
+## After Copying All Files
 
-Your mobile app will have:
-- ✅ Authentication (Welcome, Login, Register)
-- ✅ Dashboard with statistics and quick actions
-- ✅ Asset management (view and add assets)
-- ✅ Profile management with logout
-- ✅ Bottom tab navigation
-- ✅ Real backend integration with your MongoDB database
-- ✅ Admin panel access (for admin users)
+```powershell
+# Restart Expo development server
+cd PosthumousNotificationApp
+npx expo start --clear
 
-The app will be ready for APK generation and app store distribution!
+# Press 'a' for Android
+```
+
+## Your Project Structure Should Look Like:
+```
+PosthumousNotificationApp/
+├── App.tsx           (Copied from mobile/App.tsx)
+├── app.json          (Expo generated)
+├── package.json      (Expo generated)
+├── src/              (Copied from mobile/src/)
+│   ├── context/
+│   ├── services/
+│   ├── navigation/
+│   ├── hooks/
+│   └── screens/
+│       ├── auth/
+│       └── main/     (This folder was missing!)
+├── assets/           (Expo generated)
+└── node_modules/     (Dependencies)
+```
+
+## Expected Result After Copying
+
+Your posthumous notification system mobile app will have:
+- ✅ Authentication screens (Welcome, Login, Register)
+- ✅ Dashboard with MongoDB statistics
+- ✅ Asset management screens
+- ✅ Nominee management screens
+- ✅ Mood tracking functionality
+- ✅ Profile management
+- ✅ Admin panel (for admin users)
+- ✅ Full backend integration
+
+The error will be resolved once all screen files are copied to your Expo project.
