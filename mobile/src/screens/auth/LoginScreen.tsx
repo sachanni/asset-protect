@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
+  StyleSheet,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  SafeAreaView,
   Alert,
   KeyboardAvoidingView,
   Platform,
@@ -17,69 +16,116 @@ import { useAuth } from '../../hooks/useAuth';
 export default function LoginScreen() {
   const navigation = useNavigation();
   const { login } = useAuth();
-  const [identifier, setIdentifier] = useState('');
-  const [password, setPassword] = useState('');
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
   const handleLogin = async () => {
-    if (!identifier.trim() || !password.trim()) {
+    if (!formData.email.trim() || !formData.password.trim()) {
       Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    if (!formData.email.includes('@')) {
+      Alert.alert('Error', 'Please enter a valid email address');
       return;
     }
 
     setLoading(true);
     try {
-      const result = await login(identifier.trim(), password);
-      if (!result.success) {
-        Alert.alert('Login Failed', result.error || 'Please check your credentials');
+      const success = await login(formData.email, formData.password);
+      if (!success) {
+        Alert.alert('Error', 'Invalid email or password');
       }
     } catch (error) {
-      Alert.alert('Error', 'Network error. Please try again.');
+      console.error('Login error:', error);
+      Alert.alert('Error', 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
+  const fillAdminCredentials = () => {
+    setFormData({
+      email: 'admin@aulnovatechsoft.com',
+      password: 'Admin@123',
+    });
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
-      >
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <View style={styles.content}>
+          {/* Header */}
           <View style={styles.header}>
+            <View style={styles.logoContainer}>
+              <Text style={styles.logoText}>🛡️</Text>
+            </View>
             <Text style={styles.title}>Welcome Back</Text>
-            <Text style={styles.subtitle}>Sign in to your account</Text>
+            <Text style={styles.subtitle}>Sign in to access your account</Text>
           </View>
 
+          {/* Login Form */}
           <View style={styles.form}>
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Email or Mobile Number</Text>
+              <Text style={styles.label}>Email Address</Text>
               <TextInput
                 style={styles.input}
-                value={identifier}
-                onChangeText={setIdentifier}
-                placeholder="Enter your email or mobile number"
-                placeholderTextColor="#9ca3af"
-                autoCapitalize="none"
+                placeholder="Enter your email"
+                value={formData.email}
+                onChangeText={(value) => handleInputChange('email', value)}
                 keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
               />
             </View>
 
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Password</Text>
-              <TextInput
-                style={styles.input}
-                value={password}
-                onChangeText={setPassword}
-                placeholder="Enter your password"
-                placeholderTextColor="#9ca3af"
-                secureTextEntry
-              />
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  style={styles.passwordInput}
+                  placeholder="Enter your password"
+                  value={formData.password}
+                  onChangeText={(value) => handleInputChange('password', value)}
+                  secureTextEntry={!showPassword}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+                <TouchableOpacity
+                  style={styles.passwordToggle}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  <Text style={styles.passwordToggleText}>
+                    {showPassword ? '🙈' : '👁️'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
 
+            {/* Quick Admin Login */}
             <TouchableOpacity
-              style={[styles.loginButton, loading && styles.loginButtonDisabled]}
+              style={styles.adminButton}
+              onPress={fillAdminCredentials}
+            >
+              <Text style={styles.adminButtonText}>
+                🔧 Use Admin Credentials (for demo)
+              </Text>
+            </TouchableOpacity>
+
+            {/* Login Button */}
+            <TouchableOpacity
+              style={[styles.loginButton, loading && styles.disabledButton]}
               onPress={handleLogin}
               disabled={loading}
             >
@@ -88,37 +134,33 @@ export default function LoginScreen() {
               </Text>
             </TouchableOpacity>
 
-            <View style={styles.divider}>
-              <Text style={styles.dividerText}>Admin Access</Text>
-            </View>
-
-            <TouchableOpacity
-              style={styles.adminButton}
-              onPress={() => {
-                setIdentifier('admin@aulnovatechsoft.com');
-                setPassword('Admin@123');
-              }}
-            >
-              <Text style={styles.adminButtonText}>Use Admin Credentials</Text>
+            {/* Forgot Password */}
+            <TouchableOpacity style={styles.forgotPassword}>
+              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
             </TouchableOpacity>
           </View>
 
+          {/* Sign Up Link */}
           <View style={styles.footer}>
             <Text style={styles.footerText}>Don't have an account? </Text>
             <TouchableOpacity onPress={() => navigation.navigate('Register' as never)}>
-              <Text style={styles.linkText}>Sign Up</Text>
+              <Text style={styles.signUpLink}>Sign Up</Text>
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Text style={styles.backButtonText}>← Back</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+          {/* Demo Credentials Info */}
+          <View style={styles.demoInfo}>
+            <Text style={styles.demoTitle}>🧪 Demo Credentials</Text>
+            <Text style={styles.demoText}>
+              Admin: admin@aulnovatechsoft.com / Admin@123
+            </Text>
+            <Text style={styles.demoText}>
+              Use these credentials to explore the admin features
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -127,17 +169,30 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8fafc',
   },
-  keyboardView: {
+  scrollView: {
     flex: 1,
   },
-  scrollContent: {
-    flexGrow: 1,
+  content: {
+    flex: 1,
     paddingHorizontal: 24,
-  },
-  header: {
     paddingTop: 60,
     paddingBottom: 40,
+  },
+  header: {
     alignItems: 'center',
+    marginBottom: 40,
+  },
+  logoContainer: {
+    width: 60,
+    height: 60,
+    backgroundColor: '#3b82f6',
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  logoText: {
+    fontSize: 28,
   },
   title: {
     fontSize: 28,
@@ -148,9 +203,10 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: '#64748b',
+    textAlign: 'center',
   },
   form: {
-    flex: 1,
+    marginBottom: 32,
   },
   inputGroup: {
     marginBottom: 20,
@@ -162,72 +218,104 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    backgroundColor: 'white',
     borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    borderColor: '#d1d5db',
+    borderRadius: 8,
+    padding: 16,
+    fontSize: 16,
+    backgroundColor: '#fff',
+    color: '#1f2937',
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 8,
+    backgroundColor: '#fff',
+  },
+  passwordInput: {
+    flex: 1,
+    padding: 16,
     fontSize: 16,
     color: '#1f2937',
   },
-  loginButton: {
-    backgroundColor: '#3b82f6',
-    paddingVertical: 16,
-    borderRadius: 12,
-    marginTop: 20,
+  passwordToggle: {
+    padding: 16,
   },
-  loginButtonDisabled: {
-    backgroundColor: '#9ca3af',
-  },
-  loginButtonText: {
-    color: 'white',
+  passwordToggleText: {
     fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  divider: {
-    alignItems: 'center',
-    marginVertical: 24,
-  },
-  dividerText: {
-    fontSize: 12,
-    color: '#9ca3af',
-    backgroundColor: '#f8fafc',
-    paddingHorizontal: 12,
   },
   adminButton: {
     backgroundColor: '#f59e0b',
     paddingVertical: 12,
+    paddingHorizontal: 16,
     borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 16,
   },
   adminButtonText: {
-    color: 'white',
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  loginButton: {
+    backgroundColor: '#3b82f6',
+    paddingVertical: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  disabledButton: {
+    backgroundColor: '#94a3b8',
+  },
+  loginButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  forgotPassword: {
+    alignItems: 'center',
+  },
+  forgotPasswordText: {
+    color: '#3b82f6',
     fontSize: 14,
     fontWeight: '500',
-    textAlign: 'center',
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    paddingVertical: 20,
+    alignItems: 'center',
+    marginBottom: 24,
   },
   footerText: {
     fontSize: 14,
     color: '#64748b',
   },
-  linkText: {
+  signUpLink: {
     fontSize: 14,
     color: '#3b82f6',
     fontWeight: '600',
   },
-  backButton: {
-    paddingBottom: 20,
+  demoInfo: {
+    backgroundColor: '#fef3c7',
+    borderWidth: 1,
+    borderColor: '#fcd34d',
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
   },
-  backButtonText: {
-    fontSize: 16,
-    color: '#3b82f6',
-    fontWeight: '500',
+  demoTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#92400e',
+    marginBottom: 8,
+  },
+  demoText: {
+    fontSize: 12,
+    color: '#92400e',
     textAlign: 'center',
+    lineHeight: 16,
+    marginBottom: 2,
   },
 });

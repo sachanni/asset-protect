@@ -2,61 +2,92 @@ import React from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
-  Image,
+  TouchableOpacity,
+  ScrollView,
+  Dimensions,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+
+const { width, height } = Dimensions.get('window');
 
 export default function WelcomeScreen() {
   const navigation = useNavigation();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.content}>
+        {/* Header Section */}
         <View style={styles.header}>
-          <View style={styles.logo}>
+          <View style={styles.logoContainer}>
             <Text style={styles.logoText}>🛡️</Text>
           </View>
-          <Text style={styles.title}>Posthumous Notification System</Text>
+          <Text style={styles.title}>WellnessLegacy</Text>
           <Text style={styles.subtitle}>
-            Secure your digital legacy and ensure your loved ones are notified when needed
+            Secure Digital Asset Protection for Your Loved Ones
           </Text>
         </View>
 
+        {/* Features Section */}
+        <View style={styles.featuresContainer}>
+          <View style={styles.feature}>
+            <Text style={styles.featureIcon}>🔐</Text>
+            <Text style={styles.featureTitle}>Secure Storage</Text>
+            <Text style={styles.featureDescription}>
+              Your digital assets are encrypted and stored securely
+            </Text>
+          </View>
+
+          <View style={styles.feature}>
+            <Text style={styles.featureIcon}>👨‍👩‍👧‍👦</Text>
+            <Text style={styles.featureTitle}>Family Protection</Text>
+            <Text style={styles.featureDescription}>
+              Designate trusted family members as nominees
+            </Text>
+          </View>
+
+          <View style={styles.feature}>
+            <Text style={styles.featureIcon}>⚡</Text>
+            <Text style={styles.featureTitle}>Wellness Tracking</Text>
+            <Text style={styles.featureDescription}>
+              Regular check-ins ensure your well-being
+            </Text>
+          </View>
+
+          <View style={styles.feature}>
+            <Text style={styles.featureIcon}>📱</Text>
+            <Text style={styles.featureTitle}>Mobile Access</Text>
+            <Text style={styles.featureDescription}>
+              Manage everything from your mobile device
+            </Text>
+          </View>
+        </View>
+
+        {/* Action Buttons */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={styles.primaryButton}
-            onPress={() => navigation.navigate('Login' as never)}
+            onPress={() => navigation.navigate('Register' as never)}
           >
-            <Text style={styles.primaryButtonText}>Sign In</Text>
+            <Text style={styles.primaryButtonText}>Get Started</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.secondaryButton}
-            onPress={() => navigation.navigate('Register' as never)}
+            onPress={() => navigation.navigate('Login' as never)}
           >
-            <Text style={styles.secondaryButtonText}>Create Account</Text>
+            <Text style={styles.secondaryButtonText}>I Already Have an Account</Text>
           </TouchableOpacity>
         </View>
 
-        <View style={styles.features}>
-          <View style={styles.feature}>
-            <Text style={styles.featureIcon}>🔒</Text>
-            <Text style={styles.featureText}>Secure Asset Management</Text>
-          </View>
-          <View style={styles.feature}>
-            <Text style={styles.featureIcon}>👥</Text>
-            <Text style={styles.featureText}>Trusted Nominees</Text>
-          </View>
-          <View style={styles.feature}>
-            <Text style={styles.featureIcon}>📱</Text>
-            <Text style={styles.featureText}>Well-being Alerts</Text>
-          </View>
+        {/* Footer */}
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>
+            Protecting your digital legacy with enterprise-grade security
+          </Text>
         </View>
       </View>
-    </SafeAreaView>
+    </ScrollView>
   );
 }
 
@@ -68,31 +99,36 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 24,
+    paddingTop: height * 0.08,
+    paddingBottom: 40,
   },
   header: {
-    flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 60,
+    marginBottom: 48,
   },
-  logo: {
+  logoContainer: {
     width: 80,
     height: 80,
-    borderRadius: 40,
     backgroundColor: '#3b82f6',
-    justifyContent: 'center',
+    borderRadius: 40,
     alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 24,
+    shadowColor: '#3b82f6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   logoText: {
-    fontSize: 40,
+    fontSize: 36,
   },
   title: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: 'bold',
     color: '#1e293b',
-    textAlign: 'center',
     marginBottom: 12,
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
@@ -101,51 +137,80 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     paddingHorizontal: 20,
   },
+  featuresContainer: {
+    marginBottom: 48,
+  },
+  feature: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  featureIcon: {
+    fontSize: 32,
+    marginBottom: 12,
+  },
+  featureTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1e293b',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  featureDescription: {
+    fontSize: 14,
+    color: '#64748b',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
   buttonContainer: {
-    paddingBottom: 40,
+    marginBottom: 32,
   },
   primaryButton: {
     backgroundColor: '#3b82f6',
     paddingVertical: 16,
+    paddingHorizontal: 32,
     borderRadius: 12,
-    marginBottom: 12,
+    alignItems: 'center',
+    marginBottom: 16,
+    shadowColor: '#3b82f6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   primaryButtonText: {
-    color: 'white',
-    fontSize: 16,
+    color: '#fff',
+    fontSize: 18,
     fontWeight: '600',
-    textAlign: 'center',
   },
   secondaryButton: {
-    backgroundColor: 'transparent',
+    backgroundColor: '#f1f5f9',
     paddingVertical: 16,
+    paddingHorizontal: 32,
     borderRadius: 12,
-    borderWidth: 2,
+    alignItems: 'center',
+    borderWidth: 1,
     borderColor: '#e2e8f0',
   },
   secondaryButtonText: {
     color: '#475569',
     fontSize: 16,
     fontWeight: '600',
-    textAlign: 'center',
   },
-  features: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingBottom: 40,
-  },
-  feature: {
+  footer: {
     alignItems: 'center',
-    flex: 1,
   },
-  featureIcon: {
-    fontSize: 24,
-    marginBottom: 8,
-  },
-  featureText: {
+  footerText: {
     fontSize: 12,
-    color: '#64748b',
+    color: '#94a3b8',
     textAlign: 'center',
-    fontWeight: '500',
+    lineHeight: 18,
   },
 });
